@@ -1,0 +1,75 @@
+
+
+# ignore ALL files in ANY directory named temp
+temp/
+
+prompt.txt
+setup.txt
+
+# Python-related
+env/
+*.pyc
+__pycache__/
+instance/
+.venv/
+venv/
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+.eggs/
+*.coverage
+.cache/
+
+# Flask-related
+backend/migrations/
+backend/*.log
+
+# Environment variables
+*.env
+*.flaskenv
+
+# Node.js-related
+frontend/node_modules/
+frontend/.parcel-cache/
+frontend/.next/
+frontend/.nuxt/
+frontend/.vuepress/dist/
+frontend/.output/
+frontend/dist/
+frontend/build/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.iml
+
+# MacOS-specific files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows-specific files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Docker-related
+docker-compose.override.yml
+.dockerignore
+
+# Other
+*.log
+*.bak
+*.swp
