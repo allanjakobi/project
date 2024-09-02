@@ -25,6 +25,7 @@ class Model(models.Model):
     
     class Meta:
         db_table = 'model'  # Specifies the exact table name in the database
+        managed = False
 
     def __str__(self):
         return f"{self.brand} {self.model}"
@@ -32,6 +33,7 @@ class Model(models.Model):
     
 
 class Rendipillid(models.Model):
+    modelId = models.ForeignKey(Model, on_delete=models.CASCADE)
     instrumentId = models.AutoField(primary_key=True)
     color = models.CharField(max_length=128)
     serial = models.CharField(max_length=128)
@@ -39,7 +41,6 @@ class Rendipillid(models.Model):
     info_eng = models.TextField()
     status = models.CharField(max_length=128)
     price_level = models.IntegerField(default=1)
-    modelId = models.ForeignKey(Model, on_delete=models.CASCADE, db_column='modelId')
 
     class Meta:
         db_table = 'rendipillid'  # Specifies the exact table name in the database
