@@ -2,26 +2,26 @@ from django.db import models
 
 class Model(models.Model):
     modelId = models.AutoField(primary_key=True)
-    brand = models.CharField(max_length=128)
+    brand = models.CharField(max_length=64)
     model = models.CharField(max_length=128)
     keys = models.IntegerField()
     low = models.IntegerField()
     sb = models.IntegerField()
     bRows = models.IntegerField()
-    fb = models.IntegerField()
+    fb = models.IntegerField(default=0)
     reedsR = models.IntegerField()
     reedsL = models.IntegerField()
-    reeds_fb = models.IntegerField()
-    range_fb = models.IntegerField()
-    fb_low = models.IntegerField()
+    reeds_fb = models.IntegerField(default=0)
+    range_fb = models.IntegerField(default=0)
+    fb_low = models.IntegerField(default=0)
     regR = models.IntegerField()
     regL = models.IntegerField()
-    height = models.FloatField()
-    width = models.FloatField()
+    height = models.FloatField(default=36)
+    width = models.FloatField(default=18)
     weight = models.FloatField()
     keyboard = models.FloatField()
-    newPrice = models.FloatField()
-    usedPrice = models.FloatField()
+    newPrice = models.FloatField(default=2000)
+    usedPrice = models.FloatField(default=100)
     
     class Meta:
         db_table = 'model'  # Specifies the exact table name in the database
@@ -33,13 +33,13 @@ class Model(models.Model):
     
 
 class Rendipillid(models.Model):
-    modelId = models.ForeignKey(Model, on_delete=models.CASCADE)
     instrumentId = models.AutoField(primary_key=True)
-    color = models.CharField(max_length=128)
-    serial = models.CharField(max_length=128)
+    modelId = models.ForeignKey(Model, on_delete=models.CASCADE)
+    color = models.CharField(max_length=64)
+    serial = models.CharField(max_length=64)
     info_est = models.TextField()
     info_eng = models.TextField()
-    status = models.CharField(max_length=128)
+    status = models.CharField(max_length=64)
     price_level = models.IntegerField(default=1)
 
     class Meta:
@@ -57,17 +57,21 @@ class Users(models.Model):
     userId = models.AutoField(primary_key=True)
     firstName = models.CharField(max_length=128)
     lastName = models.CharField(max_length=128)
-    country = models.CharField(max_length=128)
+    country = models.CharField(default='Estonia', max_length=128)
     province = models.CharField(max_length=128)
     municipality = models.CharField(max_length=128)
     settlement = models.CharField(max_length=128)
     street = models.CharField(max_length=128)
     house = models.CharField(max_length=128)
     apartment = models.CharField(max_length=128, blank=True, null=True)
-    phone = models.CharField(max_length=128)
+    phone = models.CharField(max_length=128, default='+372')
     email = models.EmailField(unique=True)
     institution = models.CharField(max_length=128, blank=True, null=True)
     teacher = models.CharField(max_length=128, blank=True, null=True)
+    
+    def __str__(self):
+        return f"{self.firstName} {self.lastName}"
+    
 
 class Agreements(models.Model):
     agreementId = models.AutoField(primary_key=True)
