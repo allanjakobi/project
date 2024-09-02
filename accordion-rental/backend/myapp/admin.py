@@ -9,6 +9,9 @@ class RendipillidAdmin(admin.ModelAdmin):
         return f"{obj.modelId.brand} {obj.modelId.model}"
     get_model_details.short_description = 'Model Name'
 
+class UsersAdmin(admin.ModelAdmin):
+    list_display = ('userId', 'firstName', 'lastName')
+
 admin.site.register(Model)
 admin.site.register(Rendipillid, RendipillidAdmin)
 admin.site.register(Agreements)
