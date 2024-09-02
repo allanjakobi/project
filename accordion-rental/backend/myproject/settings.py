@@ -50,9 +50,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'myproject.wsgi.application'
 
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
+        'ENGINE': 'django.db.backends.sqlite3', # or 'postgresql', 'mysql', etc.
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }

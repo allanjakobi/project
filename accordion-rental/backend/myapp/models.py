@@ -1,7 +1,7 @@
 from django.db import models
 
 class Model(models.Model):
-    modelId = models.IntegerField(primary_key=True)
+    modelId = models.AutoField(primary_key=True)
     brand = models.CharField(max_length=128)
     model = models.CharField(max_length=128)
     keys = models.IntegerField()
@@ -22,16 +22,30 @@ class Model(models.Model):
     keyboard = models.FloatField()
     newPrice = models.FloatField()
     usedPrice = models.FloatField()
+    
+    class Meta:
+        db_table = 'model'  # Specifies the exact table name in the database
+
+    def __str__(self):
+        return f"{self.brand} {self.model}"
+    
+    
 
 class Rendipillid(models.Model):
     instrumentId = models.AutoField(primary_key=True)
-    modelId = models.ForeignKey(Model, on_delete=models.CASCADE)
     color = models.CharField(max_length=128)
     serial = models.CharField(max_length=128)
     info_est = models.TextField()
     info_eng = models.TextField()
     status = models.CharField(max_length=128)
     price_level = models.IntegerField(default=1)
+    modelId = models.ForeignKey(Model, on_delete=models.CASCADE, db_column='modelId')
+
+    class Meta:
+        db_table = 'rendipillid'  # Specifies the exact table name in the database
+
+    def __str__(self):
+        return f"{self.color} - {self.serial}"
 
 class Rates(models.Model):
     rateId = models.AutoField(primary_key=True)
