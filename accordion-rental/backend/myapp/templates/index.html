@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Models List</title>
+</head>
+<body>
+    <h1>Model List</h1>
+    <ul>
+        {% for model in models %}
+            <li><a href="{% url 'model_detail' model.id %}">{{ model.brand }} {{ model.model }}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

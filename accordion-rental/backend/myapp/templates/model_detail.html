@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ model.brand }} {{ model.model }}</title>
+</head>
+<body>
+    <h1>{{ model.brand }} {{ model.model }}</h1>
+    <p>Keys: {{ model.keys }}</p>
+    <p>Price: ${{ model.newPrice }}</p>
+    <!-- Add more details as needed -->
+    <a href="{% url 'index' %}">Back to list</a>
+</body>
+</html>
