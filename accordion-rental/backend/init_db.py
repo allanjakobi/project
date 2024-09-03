@@ -81,19 +81,19 @@ def init_db():
     # Create table for Agreements
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS agreements (
-        agreementId INTEGER PRIMARY KEY AUTOINCREMENT,
-        referenceNr INTEGER NOT NULL,
-        userId_id INTEGER NOT NULL,
-        instrumentId_id INTEGER NOT NULL,
-        startDate DATE NOT NULL,
-        months INTEGER NOT NULL,
-        rate INTEGER NOT NULL,
-        info TEXT NULL,
-        status TEXT NOT NULL,
-        invoice_interval INTEGER DEFAULT 1,
-        FOREIGN KEY (userId_id) REFERENCES users (userId),
-        FOREIGN KEY (instrumentId_id) REFERENCES rendipillid (instrumentId)
-    );
+    agreementId INTEGER PRIMARY KEY AUTOINCREMENT,
+    referenceNr INTEGER NOT NULL,
+    userId INTEGER NOT NULL,
+    instrumentId INTEGER NOT NULL,
+    startDate DATE NOT NULL,
+    months INTEGER NOT NULL,
+    rate INTEGER NOT NULL,
+    info TEXT,
+    status TEXT NOT NULL,
+    invoice_interval INTEGER DEFAULT 1,
+    FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE,
+    FOREIGN KEY (instrumentId) REFERENCES rendipillid(instrumentId) ON DELETE CASCADE
+);
     ''')
 
     # Create table for Invoices
