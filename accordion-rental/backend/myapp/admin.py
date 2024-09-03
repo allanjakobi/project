@@ -10,11 +10,22 @@ class RendipillidAdmin(admin.ModelAdmin):
     get_model_details.short_description = 'Model Name'
 
 class UsersAdmin(admin.ModelAdmin):
-    list_display = ('userId', 'firstName', 'lastName')
+    list_display = (
+        'full_name', 'email', 'phone', 'country', 'province', 'municipality',
+        'settlement', 'street', 'house', 'apartment'
+    )
+    list_filter = ('country', 'province', 'municipality', 'settlement')
+    search_fields = ('firstName', 'lastName', 'email', 'phone')
+
+    def full_name(self, obj):
+        return f"{obj.firstName} {obj.lastName}"
+    full_name.admin_order_field = 'firstName'  # Sorts by first name
+    full_name.short_description = 'Full Name'
+
+admin.site.register(Users, UsersAdmin)
 
 admin.site.register(Model)
 admin.site.register(Rendipillid, RendipillidAdmin)
 admin.site.register(Agreements)
 admin.site.register(Invoices)
-admin.site.register(Users)  # Register the Users model
 admin.site.register(Rates) 
