@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Invoice Details</h1>
+  <p><strong>Date:</strong> {{ invoice.date }}</p>
+  <p><strong>Agreement ID:</strong> {{ invoice.agreementId }}</p>
+  <p><strong>Quantity:</strong> {{ invoice.quantity }}</p>
+  <p><strong>Price:</strong> {{ invoice.price }}</p>
+  <a href="{% url 'invoice-edit' invoice.pk %}">Edit</a> |
+  <a href="{% url 'invoice-list' %}">Back to List</a>
+{% endblock %}

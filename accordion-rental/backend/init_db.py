@@ -1,113 +1,117 @@
 import sqlite3
 
 def init_db():
-    conn = sqlite3.connect('db.sqlite3')
-    """ conn = sqlite3.connect('instance/mydatabase.db') """
-    cursor = conn.cursor()
+    connection = sqlite3.connect('db.sqlite3')
+    cursor = connection.cursor()
 
-    # Create model table
+    # Create table for Model
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS model (
-        modelId INTEGER PRIMARY KEY UNIQUE,
-        brand TEXT,
-        model TEXT,
-        keys INTEGER,
-        low INTEGER,
-        sb INTEGER,
-        bRows INTEGER,
-        fb INTEGER,
-        reedsR INTEGER,
-        reedsL INTEGER,
-        reeds_fb INTEGER,
-        range_fb INTEGER,
-        fb_low INTEGER,
-        regR INTEGER,
-        regL INTEGER,
-        height REAL,
-        width REAL,
-        weight REAL,
-        keyboard REAL,
-        newPrice REAL,
-        usedPrice REAL
-    )
+        modelId INTEGER PRIMARY KEY AUTOINCREMENT,
+        brand TEXT NOT NULL,
+        model TEXT NOT NULL,
+        keys INTEGER NOT NULL,
+        low INTEGER NOT NULL,
+        sb INTEGER NOT NULL,
+        bRows INTEGER NOT NULL,
+        fb INTEGER DEFAULT 0,
+        reedsR INTEGER NOT NULL,
+        reedsL INTEGER NOT NULL,
+        reeds_fb INTEGER DEFAULT 0,
+        range_fb INTEGER DEFAULT 0,
+        fb_low INTEGER DEFAULT 0,
+        regR INTEGER NOT NULL,
+        regL INTEGER NOT NULL,
+        height REAL DEFAULT 36,
+        width REAL DEFAULT 18,
+        weight REAL NOT NULL,
+        keyboard REAL NOT NULL,
+        newPrice REAL DEFAULT 2000,
+        usedPrice REAL DEFAULT 100
+    );
     ''')
 
-    # Create rendipillid table
+    # Create table for Rendipillid
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS rendipillid (
-        instrumentId INTEGER PRIMARY KEY,
-        modelId INTEGER,
-        color TEXT,
-        serial TEXT,
-        info_est TEXT,
-        info_eng TEXT,
-        status TEXT,
+        instrumentId INTEGER PRIMARY KEY AUTOINCREMENT,
+        modelId_id INTEGER NOT NULL,
+        color TEXT NOT NULL,
+        serial TEXT NOT NULL,
+        info_est TEXT NOT NULL,
+        info_eng TEXT NOT NULL,
+        status TEXT NOT NULL,
         price_level INTEGER DEFAULT 1,
-        FOREIGN KEY (modelId) REFERENCES model(modelId),
-        FOREIGN KEY (price_level) REFERENCES rates(rateId)
-    )
+        FOREIGN KEY (modelId_id) REFERENCES model (modelId)
+    );
     ''')
 
-    # Create rates table
+    # Create table for Rates
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS rates (
-        rateId INTEGER PRIMARY KEY,
-        description TEXT,
-        rate REAL
-    )
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        rateId INTEGER NOT NULL,
+        description TEXT NOT NULL,
+        rate REAL NOT NULL,
+        startDate DATE NOT NULL
+    );
     ''')
 
-    # Create users table
+    # Create table for Users
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS users (
-        userId INTEGER PRIMARY KEY,
-        firstName TEXT,
-        lastName TEXT,
-        country TEXT,
-        province TEXT,
-        municipality TEXT,
-        settlement TEXT,
-        street TEXT,
-        house TEXT,
-        apartment TEXT,
-        phone TEXT,
-        email TEXT UNIQUE,
-        institution TEXT,
-        teacher TEXT
-    )
+        userId INTEGER PRIMARY KEY AUTOINCREMENT,
+        firstName TEXT NOT NULL,
+        lastName TEXT NOT NULL,
+        country TEXT DEFAULT 'Estonia',
+        province TEXT NOT NULL,
+        municipality TEXT NOT NULL,
+        settlement TEXT NOT NULL,
+        street TEXT NOT NULL,
+        house TEXT NOT NULL,
+        apartment TEXT NULL,
+        phone TEXT DEFAULT '+372',
+        email TEXT UNIQUE NOT NULL,
+        institution TEXT NULL,
+        teacher TEXT NULL,
+        useful_info TEXT NULL
+    );
     ''')
 
-    # Create agreements table
+    # Create table for Agreements
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS agreements (
-        agreementId INTEGER PRIMARY KEY,
-        referenceNr INTEGER,
-        userId INTEGER,
-        instrumentId INTEGER,
-        startDate DATE,
-        months INTEGER,
-        rate INTEGER,
-        info TEXT,
-        status TEXT,
-        FOREIGN KEY (userId) REFERENCES users(userId),
-        FOREIGN KEY (instrumentId) REFERENCES rendipillid(instrumentId)
-    )
+        agreementId INTEGER PRIMARY KEY AUTOINCREMENT,
+        referenceNr INTEGER NOT NULL,
+        userId_id INTEGER NOT NULL,
+        instrumentId_id INTEGER NOT NULL,
+        startDate DATE NOT NULL,
+        months INTEGER NOT NULL,
+        rate INTEGER NOT NULL,
+        info TEXT NULL,
+        status TEXT NOT NULL,
+        invoice_interval INTEGER DEFAULT 1,
+        FOREIGN KEY (userId_id) REFERENCES users (userId),
+        FOREIGN KEY (instrumentId_id) REFERENCES rendipillid (instrumentId)
+    );
     ''')
 
-    # Create invoices table
+    # Create table for Invoices
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS invoices (
-        id INTEGER PRIMARY KEY,
-        date DATE,
-        agreementId INTEGER,
-        quantity INTEGER,
-        price REAL,
-        FOREIGN KEY (agreementId) REFERENCES agreements(agreementId)
-    )
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date DATE NOT NULL,
+        agreementId_id INTEGER NOT NULL,
+        quantity INTEGER NOT NULL,
+        price REAL NOT NULL,
+        status TEXT NOT NULL,
+        FOREIGN KEY (agreementId_id) REFERENCES agreements (agreementId)
+    );
     ''')
 
-    conn.commit()
-    conn.close()
+    # Commit changes and close connection
+    connection.commit()
+    connection.close()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     init_db()

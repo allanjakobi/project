@@ -48,9 +48,11 @@ class Rendipillid(models.Model):
         return f"{self.color} - {self.serial}"
 
 class Rates(models.Model):
-    rateId = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True)
+    rateId = models.IntegerField()
     description = models.CharField(max_length=256)
     rate = models.FloatField()
+    startDate = models.DateField()
     
     class Meta:
         db_table = 'rates'       
@@ -72,6 +74,7 @@ class Users(models.Model):
     email = models.EmailField(unique=True)
     institution = models.CharField(max_length=128, null=True, blank=True)
     teacher = models.CharField(max_length=128, null=True, blank=True)
+    useful_info = models.CharField(max_length=128, null=True, blank=True)
     
     class Meta:
         db_table = 'users'       
@@ -89,11 +92,11 @@ class Agreements(models.Model):
     rate = models.IntegerField()
     info = models.TextField()
     status = models.CharField(max_length=128)
+    invoice_interval = models.IntegerField(default=1)  # Default value can be adjusted
+    info = models.TextField(blank=True, null=True)
     
     class Meta:
         db_table = 'agreements'       
-    def __str__(self):
-        return f"{self.firstName} {self.lastName}"
 
 class Invoices(models.Model):
     id = models.AutoField(primary_key=True)
@@ -101,8 +104,8 @@ class Invoices(models.Model):
     agreementId = models.ForeignKey(Agreements, on_delete=models.CASCADE)
     quantity = models.IntegerField()
     price = models.FloatField()
+    status = models.TextField()
     
     class Meta:
         db_table = 'invoices'       
-    def __str__(self):
-        return f"{self.firstName} {self.lastName}"
+   
