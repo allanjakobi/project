@@ -94,7 +94,7 @@ class Agreements(models.Model):
     instrumentId = models.ForeignKey(Rendipillid, on_delete=models.CASCADE)
     startDate = models.DateField()
     months = models.IntegerField(default=12)
-    rate = models.IntegerField()
+    rate = models.IntegerField(editable=False)
     status = models.CharField(max_length=128, editable=False, default="Created")
     invoice_interval = models.IntegerField(default=1)
     info = models.TextField(blank=True, null=True)
@@ -104,12 +104,21 @@ class Agreements(models.Model):
 
     def save(self, *args, **kwargs):
         is_new = self._state.adding
+
+        # Fetch the rate for the associated instrument before saving
+        if self.instrumentId:
+            rate_instance = Rates.objects.filter(rateId=self.instrumentId.price_level).first()
+            if rate_instance:
+                self.rate = rate_instance.rate
+
         super().save(*args, **kwargs)
-        
+
         # If it's a new instance and referenceNr is still the default value, update it
         if is_new and self.referenceNr == 1:
             self.referenceNr = calculate_reference_number(self.agreementId)
             Agreements.objects.filter(agreementId=self.agreementId).update(referenceNr=self.referenceNr)
+
+
 
 
 
