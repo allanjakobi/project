@@ -50,7 +50,7 @@ class Rendipillid(models.Model):
     class Meta:
         db_table = 'rendipillid'  # Specifies the exact table name in the database
     def __str__(self):
-        return f"{self.color} - {self.serial}"
+        return f"{self.modelId.brand} {self.modelId.model} - {self.color}"
 
 class Rates(models.Model):
     id = models.AutoField(primary_key=True)
@@ -62,7 +62,7 @@ class Rates(models.Model):
     class Meta:
         db_table = 'rates'       
     def __str__(self):
-        return f"{self.firstName} {self.lastName}"
+        return f"ID{self.rateId}: {self.description} {self.rate} EUR"
 
 class Users(models.Model):
     userId = models.AutoField(primary_key=True)
@@ -93,9 +93,9 @@ class Agreements(models.Model):
     userId = models.ForeignKey(Users, on_delete=models.CASCADE)
     instrumentId = models.ForeignKey(Rendipillid, on_delete=models.CASCADE)
     startDate = models.DateField()
-    months = models.IntegerField()
+    months = models.IntegerField(default=12)
     rate = models.IntegerField()
-    status = models.CharField(max_length=128)
+    status = models.CharField(max_length=128, editable=False, default="Created")
     invoice_interval = models.IntegerField(default=1)
     info = models.TextField(blank=True, null=True)
 

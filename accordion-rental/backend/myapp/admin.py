@@ -1,6 +1,7 @@
 # myapp/admin.py
 from django.contrib import admin
 from .models import Model, Rendipillid, Agreements, Invoices, Users, Rates
+from .forms import AgreementForm
 
 class RendipillidAdmin(admin.ModelAdmin):
     list_display = ('instrumentId', 'color', 'get_model_details')
@@ -22,10 +23,13 @@ class UsersAdmin(admin.ModelAdmin):
     full_name.admin_order_field = 'firstName'  # Sorts by first name
     full_name.short_description = 'Full Name'
 
+class AgreementAdmin(admin.ModelAdmin):
+    form = AgreementForm
+
 admin.site.register(Users, UsersAdmin)
 
 admin.site.register(Model)
 admin.site.register(Rendipillid, RendipillidAdmin)
-admin.site.register(Agreements)
+admin.site.register(Agreements, AgreementAdmin)
 admin.site.register(Invoices)
 admin.site.register(Rates) 
