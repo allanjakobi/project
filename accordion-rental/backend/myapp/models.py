@@ -1,4 +1,9 @@
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+#from .models import Rendipillid
+import datetime
 
 class Model(models.Model):
     modelId = models.AutoField(primary_key=True)
@@ -21,7 +26,7 @@ class Model(models.Model):
     weight = models.FloatField()
     keyboard = models.FloatField()
     newPrice = models.FloatField(default=2000)
-    usedPrice = models.FloatField(default=100)
+    usedPrice = models.FloatField(default=1000)
     
     class Meta:
         db_table = 'model'  # Specifies the exact table name in the database
@@ -84,19 +89,49 @@ class Users(models.Model):
 
 class Agreements(models.Model):
     agreementId = models.AutoField(primary_key=True)
-    referenceNr = models.IntegerField()
+    referenceNr = models.IntegerField(unique=True, editable=False, default=1)  # Default value set to 1
     userId = models.ForeignKey(Users, on_delete=models.CASCADE)
     instrumentId = models.ForeignKey(Rendipillid, on_delete=models.CASCADE)
     startDate = models.DateField()
     months = models.IntegerField()
     rate = models.IntegerField()
-    info = models.TextField()
     status = models.CharField(max_length=128)
-    invoice_interval = models.IntegerField(default=1)  # Default value can be adjusted
+    invoice_interval = models.IntegerField(default=1)
     info = models.TextField(blank=True, null=True)
-    
+
     class Meta:
-        db_table = 'agreements'       
+        db_table = 'agreements'
+
+    def save(self, *args, **kwargs):
+        is_new = self._state.adding
+        super().save(*args, **kwargs)
+        
+        # If it's a new instance and referenceNr is still the default value, update it
+        if is_new and self.referenceNr == 1:
+            self.referenceNr = calculate_reference_number(self.agreementId)
+            Agreements.objects.filter(agreementId=self.agreementId).update(referenceNr=self.referenceNr)
+
+
+
+def calculate_reference_number(agreementId):
+    year = datetime.datetime.now().year
+    base_number = f"{year}{agreementId}"
+
+    if not base_number.isdigit():
+        raise ValueError("Base number must be numeric")
+
+    # Calculating control digit (modulo 10 approach)
+    weights = [7, 3, 1]
+    total = 0
+    for i, digit in enumerate(reversed(base_number)):
+        total += int(digit) * weights[i % len(weights)]
+
+    control_digit = (10 - (total % 10)) % 10
+    reference_number = f"{base_number}{control_digit}"
+
+    return int(reference_number)
+
+
 
 class Invoices(models.Model):
     id = models.AutoField(primary_key=True)
