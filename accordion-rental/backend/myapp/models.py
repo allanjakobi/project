@@ -110,6 +110,12 @@ class Agreements(models.Model):
             rate_instance = Rates.objects.filter(rateId=self.instrumentId.price_level).first()
             if rate_instance:
                 self.rate = rate_instance.rate
+                
+                # Apply multipliers based on the months value
+                if 3 <= self.months <= 11:
+                    self.rate = round(self.rate * 1.4)
+                elif self.months < 3:
+                    self.rate = round(self.rate * 2.1)
 
         super().save(*args, **kwargs)
 
@@ -117,6 +123,14 @@ class Agreements(models.Model):
         if is_new and self.referenceNr == 1:
             self.referenceNr = calculate_reference_number(self.agreementId)
             Agreements.objects.filter(agreementId=self.agreementId).update(referenceNr=self.referenceNr)
+        
+        # Update the status of the connected instrument to "Reserved"
+        if self.instrumentId:
+            instrument = self.instrumentId
+            instrument.status = "Reserved"
+            instrument.save()
+
+
 
 
 
