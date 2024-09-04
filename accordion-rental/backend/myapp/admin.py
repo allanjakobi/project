@@ -25,6 +25,8 @@ class UsersAdmin(admin.ModelAdmin):
 
 class AgreementAdmin(admin.ModelAdmin):
     form = AgreementForm
+    list_display = ('agreementId', 'referenceNr', 'userId', 'instrumentId', 'startDate', 'months', 'rate', 'status', 'invoice_interval')
+
 
 admin.site.register(Users, UsersAdmin)
 

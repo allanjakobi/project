@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from datetime import timedelta
 
 #from .models import Rendipillid
 import datetime
@@ -79,7 +80,8 @@ class Users(models.Model):
     email = models.EmailField(unique=True)
     institution = models.CharField(max_length=128, null=True, blank=True)
     teacher = models.CharField(max_length=128, null=True, blank=True)
-    useful_info = models.CharField(max_length=128, null=True, blank=True)
+    language = models.CharField(max_length=3, choices=[('EST', 'Eesti'), ('ENG', 'English')], default='EST')
+
     
     class Meta:
         db_table = 'users'       
@@ -95,9 +97,23 @@ class Agreements(models.Model):
     startDate = models.DateField()
     months = models.IntegerField(default=12)
     rate = models.IntegerField(editable=False)
-    status = models.CharField(max_length=128, editable=False, default="Created")
+    status = models.CharField(max_length=15, editable=False, choices=[
+        ('Created', 'Created'),
+        ('ContactSigned', 'Contact Signed'),
+        ('EndingSoon', 'Ending Soon'),
+        ('Ended', 'Ended'),
+        ('Finished', 'Finished')
+    ], default='Created')
     invoice_interval = models.IntegerField(default=1)
     info = models.TextField(blank=True, null=True)
+    
+    def __str__(self):
+        return f"{self.status} Agreement"
+
+    @property
+    def endDate(self):
+        end_date = self.startDate + timedelta(days=30 * self.invoiceInterval)
+        return min(end_date, datetime.now().date())
 
     class Meta:
         db_table = 'agreements'
@@ -127,7 +143,7 @@ class Agreements(models.Model):
         # Update the status of the connected instrument to "Reserved"
         if self.instrumentId:
             instrument = self.instrumentId
-            instrument.status = "Reserved"
+            instrument.status = "Available"
             instrument.save()
 
 

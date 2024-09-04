@@ -74,7 +74,7 @@ def init_db():
         email TEXT UNIQUE NOT NULL,
         institution TEXT NULL,
         teacher TEXT NULL,
-        useful_info TEXT NULL
+        language TEXT NULL
     );
     ''')
 
