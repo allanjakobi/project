@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.urls import path, include
 #from django.http import HttpResponseRedirect
 from myapp import views
-from .views import RendipillidListCreate
+from .views import RendipillidListCreate, AvailableInstrumentsViewSet
+
 
 urlpatterns = [
     path('', RendipillidListCreate.as_view(), name='rendipillid-list'),  # Home view or main view
@@ -13,4 +14,6 @@ urlpatterns = [
     path('invoices/add/', views.InvoiceCreate.as_view(), name='invoice-add'),  # Invoice creation view
     path('invoices/<int:pk>/', views.InvoiceDetail.as_view(), name='invoice-detail'),  # Invoice detail view
     path('invoices/<int:pk>/edit/', views.InvoiceUpdate.as_view(), name='invoice-edit'),  # Invoice update view
+    path('api/available-instruments/', AvailableInstrumentsViewSet.as_view({'get': 'list'})),
+
 ]

@@ -7,6 +7,8 @@ from .models import Rendipillid
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from .models import Invoices
+from rest_framework import viewsets
+from rest_framework.response import Response
 
 class InvoiceList(ListView):
     model = Invoices
@@ -61,3 +63,13 @@ def rendipillid_list_view(request):
     rendipillid_list = Rendipillid.objects.select_related('modelId').all()
     return render(request, 'rendipillid_list.html', {'rendipillid_list': rendipillid_list})
 
+class AvailableInstrumentsViewSet(viewsets.ViewSet):
+    def list(self, request):
+        # Query to get only the instruments that are available
+        available_instruments = Rendipillid.objects.filter(status="Available")
+        
+        # Serialize the queryset to JSON format
+        serializer = RendipillidSerializer(available_instruments, many=True)
+        
+        # Return the serialized data as a JSON response
+        return Response(serializer.data)
