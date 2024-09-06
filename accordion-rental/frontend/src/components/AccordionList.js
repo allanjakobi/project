@@ -1,3 +1,4 @@
+// AccordionList.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -5,39 +6,50 @@ const AccordionList = () => {
   const [instruments, setInstruments] = useState([]);
   const [error, setError] = useState(null);
 
-  // Fetch available instruments when component mounts
+  // Fetch data from the API
   useEffect(() => {
     const fetchInstruments = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/api/available-instruments/', {
-          headers: {
-            'Accept': 'application/json',
-            // Add CSRF token if needed
-            // 'X-CSRFToken': csrfToken,
-          },
-        });
+        const response = await axios.get('/api/available-instruments/');
         setInstruments(response.data);
-      } catch (error) {
-        console.error('Error fetching available instruments', error);
-        setError(error);
+      } catch (err) {
+        setError(err);
+        console.error("Error fetching available instruments", err);
       }
     };
-
+  
     fetchInstruments();
   }, []);
+
+  if (error) {
+    return <div>Error fetching available instruments: {error.message}</div>;
+  }
 
   return (
     <div>
       <h1>Available Instruments</h1>
-      {error ? (
-        <p>Error fetching instruments: {error.message}</p>
-      ) : (
-        <ul>
-          {instruments.map((instrument, index) => (
-            <li key={index}>{instrument.instrumentId} - {instrument.status}</li>
-          ))}
-        </ul>
-      )}
+      <ul>
+        {instruments.map(instrument => (
+          <li key={instrument.instrumentId}>
+          {/* Access model data from modelId */}
+          <h2>{instrument.modelId.brand} {instrument.modelId.model}</h2>
+          <p>Color: {instrument.color}</p>
+          <p>Serial: {instrument.serial}</p>
+          <p>Status: {instrument.status}</p>
+          <p>Price Level: {instrument.price_level}</p>
+          <h3>Model Details:</h3>
+          <p>Keys: {instrument.modelId.keys}</p>
+          <p>Weight: {instrument.modelId.weight} kg</p>
+          <p>Dimensions: {instrument.modelId.height}cm x {instrument.modelId.width}cm</p>
+          <p>Reeds (Right/Left): {instrument.modelId.reedsR}/{instrument.modelId.reedsL}</p>
+          <p>New Price: ${instrument.modelId.newPrice}</p>
+          <p>Used Price: ${instrument.modelId.usedPrice}</p>
+          <h3>Additional Info:</h3>
+          <p>{instrument.info_est}</p>
+          <p>{instrument.info_eng}</p>
+        </li>
+        ))}
+      </ul>
     </div>
   );
 };

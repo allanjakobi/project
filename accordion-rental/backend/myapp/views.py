@@ -70,6 +70,6 @@ def rendipillid_list_view(request):
 @method_decorator(csrf_exempt, name='dispatch')
 class AvailableInstrumentsViewSet(viewsets.ViewSet):
     def list(self, request):
-        available_instruments = Rendipillid.objects.filter(status="Available")
+        available_instruments = Rendipillid.objects.filter(status="Available").select_related('modelId')  # Use modelId
         serializer = RendipillidSerializer(available_instruments, many=True)
         return Response(serializer.data)
