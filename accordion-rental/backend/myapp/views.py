@@ -1,3 +1,5 @@
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view
 from rest_framework import generics
 from .models import Model, Rendipillid
 from .serializers import ModelSerializer, RendipillidSerializer
@@ -9,6 +11,8 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from .models import Invoices
 from rest_framework import viewsets
 from rest_framework.response import Response
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 class InvoiceList(ListView):
     model = Invoices
@@ -63,13 +67,9 @@ def rendipillid_list_view(request):
     rendipillid_list = Rendipillid.objects.select_related('modelId').all()
     return render(request, 'rendipillid_list.html', {'rendipillid_list': rendipillid_list})
 
+@method_decorator(csrf_exempt, name='dispatch')
 class AvailableInstrumentsViewSet(viewsets.ViewSet):
     def list(self, request):
-        # Query to get only the instruments that are available
         available_instruments = Rendipillid.objects.filter(status="Available")
-        
-        # Serialize the queryset to JSON format
         serializer = RendipillidSerializer(available_instruments, many=True)
-        
-        # Return the serialized data as a JSON response
         return Response(serializer.data)

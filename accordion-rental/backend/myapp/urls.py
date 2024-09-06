@@ -1,19 +1,28 @@
-from django.contrib import admin
 from django.urls import path, include
-#from django.http import HttpResponseRedirect
-from myapp import views
-from .views import RendipillidListCreate, AvailableInstrumentsViewSet
+from rest_framework.routers import DefaultRouter
+from . import views
+from .views import AvailableInstrumentsViewSet, RendipillidListCreate
+from django.contrib import admin
 
+# Create a router and register your viewsets with it
+router = DefaultRouter()
+router.register(r'available-instruments', AvailableInstrumentsViewSet, basename='available-instruments')
 
 urlpatterns = [
-    path('', RendipillidListCreate.as_view(), name='rendipillid-list'),  # Home view or main view
-    path('admin/', admin.site.urls),  # Admin URL
-    path('models/', views.ModelList.as_view(), name='model-list'),  # Model list view
-    path('rendipillid/', views.RendipillidList.as_view(), name='rendipillid-list'),  # Rendipillid list view
-    path('invoices/', views.InvoiceList.as_view(), name='invoice-list'),  # Invoice list view
-    path('invoices/add/', views.InvoiceCreate.as_view(), name='invoice-add'),  # Invoice creation view
-    path('invoices/<int:pk>/', views.InvoiceDetail.as_view(), name='invoice-detail'),  # Invoice detail view
-    path('invoices/<int:pk>/edit/', views.InvoiceUpdate.as_view(), name='invoice-edit'),  # Invoice update view
-    path('api/available-instruments/', AvailableInstrumentsViewSet.as_view({'get': 'list'})),
+    # Main view for listing and creating rendipillid
+    path('', RendipillidListCreate.as_view(), name='rendipillid-list'),
 
+    # Admin URL
+    path('admin/', admin.site.urls),
+
+    # Other views
+    path('models/', views.ModelList.as_view(), name='model-list'),
+    path('rendipillid/', views.RendipillidList.as_view(), name='rendipillid-list'),
+    path('invoices/', views.InvoiceList.as_view(), name='invoice-list'),
+    path('invoices/add/', views.InvoiceCreate.as_view(), name='invoice-add'),
+    path('invoices/<int:pk>/', views.InvoiceDetail.as_view(), name='invoice-detail'),
+    path('invoices/<int:pk>/edit/', views.InvoiceUpdate.as_view(), name='invoice-edit'),
+
+    # Include the router URLs
+    path('api/', include(router.urls)),  # Use this for the API endpoint
 ]

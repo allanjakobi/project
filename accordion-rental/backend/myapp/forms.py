@@ -38,6 +38,13 @@ class AgreementForm(forms.ModelForm):
         initial=date.today,
         help_text=mark_safe("Format: <strong>DD.MM.YYYY</strong>")
     )
+    
+    startDate = forms.DateField(
+        widget=forms.DateInput(format='%d.%m.%Y', attrs={'placeholder': 'DD.MM.YYYY'}),
+        input_formats=['%d.%m.%Y'],
+        initial=date.today,
+        help_text=mark_safe("Format: <strong>DD.MM.YYYY</strong>")
+    )
 
     class Meta:
         model = Agreements
