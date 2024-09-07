@@ -4,6 +4,7 @@ import axios from 'axios';
 
 const AccordionList = () => {
   const [instruments, setInstruments] = useState([]);
+  const [loading, setLoading] = useState(true); // For showing a loading state
   const [error, setError] = useState(null);
 
   // Fetch data from the API
@@ -25,12 +26,16 @@ const AccordionList = () => {
     return <div>Error fetching available instruments: {error.message}</div>;
   }
 
+  
+
   return (
     <div>
       <h1>Available Instruments</h1>
       <ul>
         {instruments.map(instrument => (
           <li key={instrument.instrumentId}>
+          <img src={instrument.thumbnail_image} alt={`${instrument.modelId.brand} ${instrument.modelId.model}`} />
+
           {/* Access model data from modelId */}
           <h2>{instrument.modelId.brand} {instrument.modelId.model}</h2>
           <p>Color: {instrument.color}</p>

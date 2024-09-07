@@ -39,15 +39,7 @@ CORS_ALLOWED_ORIGINS = [
 # If you want to allow all origins (not recommended for production)
 CORS_ALLOW_ALL_ORIGINS = True
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.AllowAny',
-    ),
-}
+
 
 ROOT_URLCONF = 'myproject.urls'
 
@@ -92,8 +84,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+LANGUAGE_CODE = 'en'
+LANGUAGES = [
+    ('et', 'Estonian'),
+    ('en', 'English'),
+]
+TIME_ZONE = 'Europe/Tallinn'
 
 USE_I18N = True
 USE_TZ = True

@@ -67,7 +67,7 @@ def rendipillid_list_view(request):
     rendipillid_list = Rendipillid.objects.select_related('modelId').all()
     return render(request, 'rendipillid_list.html', {'rendipillid_list': rendipillid_list})
 
-@method_decorator(csrf_exempt, name='dispatch')
+#@method_decorator(csrf_exempt, name='dispatch')
 class AvailableInstrumentsViewSet(viewsets.ViewSet):
     def list(self, request):
         available_instruments = Rendipillid.objects.filter(status="Available").select_related('modelId')  # Use modelId
