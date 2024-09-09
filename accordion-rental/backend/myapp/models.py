@@ -118,7 +118,7 @@ class Agreements(models.Model):
     info = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=15, editable=False, choices=[
         ('Created', 'Created'),
-        ('ContactSigned', 'Contact Signed'),
+        ('Activated', 'Activated'), #contract signed
         ('EndingSoon', 'Ending Soon'),
         ('Ended', 'Ended'),
         ('Finished', 'Finished')
