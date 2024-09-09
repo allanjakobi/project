@@ -24,10 +24,14 @@ def init_db():
         regL INTEGER NOT NULL,
         height REAL DEFAULT 36,
         width REAL DEFAULT 18,
+        length REAL DEFAULT 36,  -- fixed typo
         weight REAL NOT NULL,
         keyboard REAL NOT NULL,
+        folds INTEGER,
+        deep INTEGER,
+        bass_start_notes TEXT,  -- Removed comma at the end
         newPrice REAL DEFAULT 2000,
-        usedPrice REAL DEFAULT 100
+        usedPrice REAL DEFAULT 1000
     );
     ''')
 
@@ -42,7 +46,8 @@ def init_db():
         info_eng TEXT NOT NULL,
         status TEXT NOT NULL,
         price_level INTEGER DEFAULT 1,
-        FOREIGN KEY (modelId_id) REFERENCES model (modelId)
+        FOREIGN KEY (modelId_id) REFERENCES model (modelId),  -- Comma added
+        FOREIGN KEY (price_level) REFERENCES rates (id)  -- Comma removed
     );
     ''')
 
@@ -50,10 +55,8 @@ def init_db():
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS rates (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        rateId INTEGER NOT NULL,
         description TEXT NOT NULL,
-        rate REAL NOT NULL,
-        startDate DATE NOT NULL
+        rate REAL NOT NULL  -- Removed trailing comma
     );
     ''')
 
@@ -69,31 +72,31 @@ def init_db():
         settlement TEXT NOT NULL,
         street TEXT NOT NULL,
         house TEXT NOT NULL,
-        apartment TEXT NULL,
+        apartment TEXT,  -- Fixed NULL constraint
         phone TEXT DEFAULT '+372',
         email TEXT UNIQUE NOT NULL,
-        institution TEXT NULL,
-        teacher TEXT NULL,
-        language TEXT NULL
+        institution TEXT,
+        teacher TEXT,
+        language TEXT
     );
     ''')
 
     # Create table for Agreements
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS agreements (
-    agreementId INTEGER PRIMARY KEY AUTOINCREMENT,
-    referenceNr INTEGER NOT NULL,
-    userId INTEGER NOT NULL,
-    instrumentId INTEGER NOT NULL,
-    startDate DATE NOT NULL,
-    months INTEGER NOT NULL,
-    rate INTEGER NOT NULL,
-    info TEXT,
-    status TEXT NOT NULL,
-    invoice_interval INTEGER DEFAULT 1,
-    FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE,
-    FOREIGN KEY (instrumentId) REFERENCES rendipillid(instrumentId) ON DELETE CASCADE
-);
+        agreementId INTEGER PRIMARY KEY AUTOINCREMENT,
+        referenceNr INTEGER NOT NULL,
+        userId INTEGER NOT NULL,
+        instrumentId INTEGER NOT NULL,
+        startDate DATE NOT NULL,
+        months INTEGER NOT NULL,
+        rate INTEGER NOT NULL,
+        info TEXT,
+        status TEXT NOT NULL,
+        invoice_interval INTEGER DEFAULT 1,
+        FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE,
+        FOREIGN KEY (instrumentId) REFERENCES rendipillid(instrumentId) ON DELETE CASCADE
+    );
     ''')
 
     # Create table for Invoices

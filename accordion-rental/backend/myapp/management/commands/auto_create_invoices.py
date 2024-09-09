@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from myapp.models import Agreements, Invoices, Rates
+from myapp.models import Agreements, Invoices
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from django.db.models import Q
@@ -14,31 +14,38 @@ class Command(BaseCommand):
         up_to_date_str = options['up_to_date']
         self.stdout.write(f"Creating invoices up to {up_to_date_str}...")
         
-        # Implement the auto-create invoices logic
+        # Convert the string date to a date object
         up_to_date = datetime.strptime(up_to_date_str, '%d.%m.%Y').date()
 
+        # Fetch all active agreements (excluding closed ones)
         agreements = Agreements.objects.filter(~Q(status="Closed"))
 
         for agreement in agreements:
             current_invoice_date = agreement.startDate
+            last_invoice_date = min(current_invoice_date + relativedelta(months=agreement.months), up_to_date)
 
-            while current_invoice_date <= up_to_date:
+            # Loop through the agreement's billing periods until we reach the specified date
+            while current_invoice_date < last_invoice_date:
+                # Check if an invoice for this period already exists
                 if not Invoices.objects.filter(
-                    agreementId=agreement,
+                    agreement=agreement,
                     date__year=current_invoice_date.year,
                     date__month=current_invoice_date.month
                 ).exists():
+                    # Calculate quantity and price based on the agreement's data
                     quantity = agreement.invoice_interval
-                    price = agreement.rate * quantity
+                    price = agreement.rate  # the rate
 
+                    # Create the invoice for the current billing period
                     Invoices.objects.create(
                         date=current_invoice_date,
-                        agreementId=agreement,
+                        agreement=agreement,
                         quantity=quantity,
                         price=price,
                         status="Issued"
                     )
 
-                current_invoice_date += relativedelta(months=+agreement.invoice_interval)
+                # Move to the next billing period based on invoice_interval (months)
+                current_invoice_date += relativedelta(months=agreement.invoice_interval)
 
         self.stdout.write("Invoices created successfully.")
