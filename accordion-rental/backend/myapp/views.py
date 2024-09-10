@@ -13,6 +13,8 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.db.models import Q
+
 
 class InvoiceList(ListView):
     model = Invoices
@@ -64,12 +66,12 @@ def rendipillid_create(request):
 
 def rendipillid_list_view(request):
     # Fetch all rendipillid entries, including related model data
-    rendipillid_list = Rendipillid.objects.select_related('modelId').all()
+    rendipillid_list = Rendipillid.objects.select_related('modelId', 'price_level').all()
     return render(request, 'rendipillid_list.html', {'rendipillid_list': rendipillid_list})
 
 #@method_decorator(csrf_exempt, name='dispatch')
 class AvailableInstrumentsViewSet(viewsets.ViewSet):
     def list(self, request):
-        available_instruments = Rendipillid.objects.filter(status="Available").select_related('modelId')  # Use modelId
+        available_instruments = Rendipillid.objects.filter(Q(status="Available") | Q(status="Reserved")).select_related('modelId', 'price_level')  # Use modelId
         serializer = RendipillidSerializer(available_instruments, many=True)
         return Response(serializer.data)
