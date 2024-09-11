@@ -14,6 +14,8 @@ from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.db.models import Q
+from django.contrib.auth.decorators import user_passes_test
+
 
 
 class InvoiceList(ListView):
@@ -75,3 +77,12 @@ class AvailableInstrumentsViewSet(viewsets.ViewSet):
         available_instruments = Rendipillid.objects.filter(Q(status="Available") | Q(status="Reserved")).select_related('modelId', 'price_level')  # Use modelId
         serializer = RendipillidSerializer(available_instruments, many=True)
         return Response(serializer.data)
+
+def is_admin(user):
+    return user.groups.filter(name='Admin').exists()
+
+# Protect a view so that only Admin users can access it
+@user_passes_test(is_admin)
+def admin_view(request):
+    # Only accessible by users in the 'Admin' group
+    return render(request, 'admin_page.html')

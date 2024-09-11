@@ -36,7 +36,7 @@ class RendipillidSerializer(serializers.ModelSerializer):
     
     def get_keyboardmax(self, obj):
         # Custom field: Increase the keyboard value by 3.3
-        return obj.modelId.keyboard + 3.3
+        return round (obj.modelId.keyboard + 3.3, 2)
     
     def get_whitekeys(self, obj):
         # Extract keys and low from the related model
