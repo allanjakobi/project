@@ -79,6 +79,7 @@ class Users(models.Model):
     )
     
     userId = models.AutoField(primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     firstName = models.CharField(max_length=64)
     lastName = models.CharField(max_length=64)
     country = models.CharField(max_length=64, default='Estonia')
@@ -101,26 +102,21 @@ class Users(models.Model):
     teacher = models.CharField(max_length=64, null=True, blank=True)
     language = models.CharField(max_length=7, choices=LANGUAGE_CHOICES, default='Eesti')
 
-    
     class Meta:
-        db_table = 'users'       
+        db_table = 'users'
+    
     def __str__(self):
         return f"{self.firstName} {self.lastName}"
-    
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    # Additional fields
-    country = models.CharField(max_length=64)
-    language = models.CharField(max_length=7)
-    
-    @receiver(post_save, sender=User)
-    def create_user_profile(sender, instance, created, **kwargs):
-        if created:
-            UserProfile.objects.create(user=instance)
 
+# Signal to create Users profile automatically when a new User is created
 @receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    instance.userprofile.save()
+def create_or_update_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Users.objects.create(user=instance)  # Create the user profile when the User is created
+    else:
+        instance.profile.save()  # Save the profile when the User is saved
+    
+    
 
 class Agreements(models.Model):
     agreementId = models.AutoField(primary_key=True)
