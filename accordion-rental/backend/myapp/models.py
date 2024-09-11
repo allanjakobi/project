@@ -95,7 +95,7 @@ class Users(models.Model):
         default='+372'
     )
     email = models.EmailField(
-        unique=True,
+        unique=False,
         validators=[EmailValidator(message="Enter a valid email address.")]
     )
     institution = models.CharField(max_length=64, null=True, blank=True)
