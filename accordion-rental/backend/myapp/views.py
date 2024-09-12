@@ -15,6 +15,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.db.models import Q
 from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.models import User
+from rest_framework import status
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
 
 
 
@@ -87,3 +91,19 @@ def is_admin(user):
 def admin_view(request):
     # Only accessible by users in the 'Admin' group
     return render(request, 'admin_page.html')
+
+@api_view(['POST'])
+def register_user(request):
+    username = request.data.get('username')
+    email = request.data.get('email')
+    password = request.data.get('password')
+    
+    if User.objects.filter(username=username).exists():
+        return Response({"error": "Username already exists"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    user = User.objects.create_user(username=username, email=email, password=password)
+    user.save()
+    return Response({"success": "User registered successfully"}, status=status.HTTP_201_CREATED)
+
+def csrf(request):
+    return JsonResponse({'csrfToken': get_token(request)})

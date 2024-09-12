@@ -35,9 +35,7 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',  # Allow requests from React app
 ]
-
-# If you want to allow all origins (not recommended for production)
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
 
 
