@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import AccordionList from './components/AccordionList';
 import RegisterForm from './components/RegisterForm';
 import AdminDashboard from './components/AdminDashboard';
+import LoginForm from './components/LoginForm';
 
 function App() {
   return (
@@ -13,6 +14,8 @@ function App() {
         <Route path="/" element={<AccordionList />} />
         <Route path="/register" element={<RegisterForm />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/login" element={<LoginForm />} />
+        
       </Routes>
     </Router>
   );

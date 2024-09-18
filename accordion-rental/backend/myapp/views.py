@@ -16,6 +16,7 @@ from django.utils.decorators import method_decorator
 from django.db.models import Q
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
 from rest_framework import status
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
@@ -113,3 +114,16 @@ def register_user(request):
 
 def csrf(request):
     return JsonResponse({'csrfToken': get_token(request)})
+
+@api_view(['POST'])
+def login_user(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    
+    user = authenticate(request, username=username, password=password)
+    
+    if user is not None:
+        login(request, user)  # Logs the user in and creates a session
+        return Response({"success": "User logged in successfully"}, status=status.HTTP_200_OK)
+    else:
+        return Response({"error": "Invalid username or password"}, status=status.HTTP_400_BAD_REQUEST)
