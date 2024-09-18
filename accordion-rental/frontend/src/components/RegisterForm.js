@@ -1,15 +1,19 @@
 import Cookies from 'js-cookie';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';  // For redirecting to login page
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: '',
+    confirmPassword: '',  // Add confirmPassword state
   });
   const [errors, setErrors] = useState({});
+  const [passwordError, setPasswordError] = useState('');  // State for password mismatch
   const [successMessage, setSuccessMessage] = useState('');
   const [csrfToken, setCsrfToken] = useState('');
+  const navigate = useNavigate();  // React Router's navigate function
 
   // Fetch CSRF token from Django backend explicitly
   useEffect(() => {
@@ -30,7 +34,13 @@ const RegisterForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
+    // Check if passwords match before submitting
+    if (formData.password !== formData.confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return;
+    }
+
     try {
       const response = await fetch('http://127.0.0.1:8000/api/register/', {
         method: 'POST',
@@ -38,13 +48,23 @@ const RegisterForm = () => {
           'Content-Type': 'application/json',
           'X-CSRFToken': csrfToken,  // Include CSRF token
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+        }),
         credentials: 'include',  // Include cookies (for CSRF)
       });
   
       if (response.ok) {
         const data = await response.json();
-        setSuccessMessage('User registered successfully!');
+        setSuccessMessage('User added successfully!');
+        
+        // Redirect to login after successful registration
+        setTimeout(() => {
+          navigate('/login');  // Redirect to login page
+        }, 1500);  // Delay the redirect to show success message
+
       } else {
         const errorData = await response.json();
         setErrors(errorData);
@@ -95,6 +115,17 @@ const RegisterForm = () => {
           onChange={handleInputChange}
         />
         {errors.password && <span>{errors.password}</span>}
+      </div>
+
+      <div>
+        <label>Confirm Password:</label>
+        <input
+          type="password"
+          name="confirmPassword"  // Handle confirm password
+          value={formData.confirmPassword}
+          onChange={handleInputChange}
+        />
+        {passwordError && <span>{passwordError}</span>}  {/* Display password mismatch error */}
       </div>
 
       <button type="submit">Register</button>

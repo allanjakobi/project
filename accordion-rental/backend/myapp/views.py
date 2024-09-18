@@ -89,8 +89,8 @@ def is_admin(user):
 
 @ensure_csrf_cookie
 def get_csrf_token(request):
-    token = get_token(request)  # Ensure token is fetched
-    return JsonResponse({'csrfToken': token})  # Send the CSRF token to the frontend
+    token = get_token(request)
+    return JsonResponse({'csrfToken': token})
 
 # Protect a view so that only Admin users can access it
 @user_passes_test(is_admin)
@@ -105,7 +105,7 @@ def register_user(request):
     password = request.data.get('password')
     
     if User.objects.filter(username=username).exists():
-        return Response({"error": "Username already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"username": "Username already exists"}, status=status.HTTP_400_BAD_REQUEST)
     
     user = User.objects.create_user(username=username, email=email, password=password)
     user.save()

@@ -114,7 +114,7 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created:
         Users.objects.create(user=instance)  # Create the user profile when the User is created
     else:
-        instance.profile.save()  # Save the profile when the User is saved
+        instance.users.save()  # Save the profile when the User is saved
     
     
 
