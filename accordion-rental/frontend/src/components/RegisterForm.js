@@ -2,8 +2,6 @@ import Cookies from 'js-cookie';
 import { useState, useEffect } from 'react';
 
 const RegisterForm = () => {
-
-  // Define state to hold form data and other states
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -13,43 +11,54 @@ const RegisterForm = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [csrfToken, setCsrfToken] = useState('');
 
-  // Fetch CSRF token from Django
+  // Fetch CSRF token from Django backend explicitly
   useEffect(() => {
-    const token = Cookies.get('csrftoken'); // Fetch CSRF token from cookie
-    setCsrfToken(token);
+    const fetchCsrfToken = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/csrf/', {
+          credentials: 'include',  // Ensures cookies (CSRF token) are included
+        });
+        const data = await response.json();
+        setCsrfToken(data.csrfToken);  // Store token in state
+      } catch (error) {
+        console.error('Failed to fetch CSRF token', error);
+      }
+    };
+
+    fetchCsrfToken();
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const response = await fetch('http://127.0.0.1:8000/admin/auth/user/add/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken,  // Include CSRF token in the request headers
-      },
-      body: JSON.stringify({
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        // Other form fields...
-      }),
-      credentials: 'include',
-    });
-
-    if (response.ok) {
-      console.log('User registered successfully');
-    } else {
-      console.log('Error registering user');
+  
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/register/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,  // Include CSRF token
+        },
+        body: JSON.stringify(formData),
+        credentials: 'include',  // Include cookies (for CSRF)
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        setSuccessMessage('User registered successfully!');
+      } else {
+        const errorData = await response.json();
+        setErrors(errorData);
+      }
+    } catch (error) {
+      console.error('Error registering user', error);
     }
   };
 
-  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value,  // Update the specific field
+      [name]: value,
     });
   };
 
