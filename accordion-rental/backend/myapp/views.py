@@ -19,6 +19,7 @@ from django.contrib.auth.models import User
 from rest_framework import status
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 
 
@@ -85,6 +86,11 @@ class AvailableInstrumentsViewSet(viewsets.ViewSet):
 
 def is_admin(user):
     return user.groups.filter(name='Admin').exists()
+
+@ensure_csrf_cookie
+def get_csrf_token(request):
+    token = get_token(request)  # Ensure token is fetched
+    return JsonResponse({'csrfToken': token})  # Send the CSRF token to the frontend
 
 # Protect a view so that only Admin users can access it
 @user_passes_test(is_admin)

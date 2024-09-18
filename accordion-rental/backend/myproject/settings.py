@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'sslserver',
     'myapp',
 ]
 
@@ -36,7 +37,20 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',  # Allow requests from React app
 ]
 CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",  # Trust the frontend for CSRF
+]
+# Ensure the CSRF cookie has the correct attributes for cross-site requests
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True
+CORS_ALLOW_CREDENTIALS = True  # This is necessary for cross-site cookies
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000',  # Add your frontend domain here
+]
 
+# This ensures the session cookie also follows the same rules (if applicable)
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
 
 
 ROOT_URLCONF = 'myproject.urls'
