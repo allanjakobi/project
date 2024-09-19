@@ -21,6 +21,7 @@ from rest_framework import status
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie
+import json
 
 
 
@@ -117,35 +118,52 @@ def csrf(request):
 
 @api_view(['POST'])
 def login_user(request):
-    username = request.data.get('username')
-    password = request.data.get('password')
-    
-    user = authenticate(request, username=username, password=password)
-    
-    if user is not None:
-        login(request, user)
+    if request.method == 'POST':
+        # Parse JSON data from the request body
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
 
-        # Check for missing data in the Users table
-        user_profile = Users.objects.get(user=user)
-        missing_data = (
-            not user_profile.firstName or
-            not user_profile.lastName or
-            not user_profile.country or
-            not user_profile.province or
-            not user_profile.municipality or
-            not user_profile.settlement or
-            not user_profile.street or
-            not user_profile.house or
-            not user_profile.phone or
-            not user_profile.language
-        )
+        username = data.get('username')
+        password = data.get('password')
 
-        if missing_data:
-            return JsonResponse({"redirect": "/profile"}, status=200)
+        # Authenticate the user
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            # Log the user in (sets session)
+            login(request, user)
+
+            try:
+                # Fetch user profile
+                user_profile = Users.objects.get(user=user)
+
+                # Check if any required fields are missing
+                missing_data = (
+                    not user_profile.firstName or
+                    not user_profile.lastName or
+                    not user_profile.country or
+                    not user_profile.province or
+                    not user_profile.municipality or
+                    not user_profile.settlement or
+                    not user_profile.street or
+                    not user_profile.house or
+                    not user_profile.phone or
+                    not user_profile.language
+                )
+
+                if missing_data:
+                    return JsonResponse({"redirect": "/profile"}, status=200)
+                else:
+                    return JsonResponse({"redirect": "/dashboard"}, status=200)
+
+            except Users.DoesNotExist:
+                return JsonResponse({"error": "User profile not found"}, status=400)
         else:
-            return JsonResponse({"redirect": "/dashboard"}, status=200)
-    else:
-        return JsonResponse({"error": "Invalid credentials"}, status=400)
+            return JsonResponse({"error": "Invalid credentials"}, status=400)
+    
+    return JsonResponse({"error": "Invalid request method"}, status=405)
     
 @api_view(['GET', 'POST'])
 def profile_view(request):

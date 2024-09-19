@@ -34,7 +34,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',  # Allow requests from React app
+    "http://localhost:3000",  # Your React frontend
 ]
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
@@ -43,10 +43,9 @@ CSRF_TRUSTED_ORIGINS = [
 # Ensure the CSRF cookie has the correct attributes for cross-site requests
 CSRF_COOKIE_SAMESITE = 'None'
 CSRF_COOKIE_SECURE = True
-CORS_ALLOW_CREDENTIALS = True  # This is necessary for cross-site cookies
-CORS_ORIGIN_WHITELIST = [
+""" CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000',  # Add your frontend domain here
-]
+] """
 
 # This ensures the session cookie also follows the same rules (if applicable)
 SESSION_COOKIE_SAMESITE = 'None'

@@ -22,6 +22,7 @@ urlpatterns = [
     # Other views
     path('models/', views.ModelList.as_view(), name='model-list'),
     path('rendipillid/', views.RendipillidList.as_view(), name='rendipillid-list'),
+    path('api/get_csrf_token/', get_csrf_token, name='get_csrf_token'),
     path('api/register/', register_user, name='register_user'),
     path('api/login/', login_user, name='login_user'),
     path('admin-view/', admin_view, name='admin_view'),
