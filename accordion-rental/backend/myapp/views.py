@@ -1,7 +1,7 @@
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework import generics
-from .models import Model, Rendipillid
+from .models import Model, Rendipillid, Users
 from .serializers import ModelSerializer, RendipillidSerializer
 from django.shortcuts import render
 from .forms import RendipillidForm
@@ -123,7 +123,64 @@ def login_user(request):
     user = authenticate(request, username=username, password=password)
     
     if user is not None:
-        login(request, user)  # Logs the user in and creates a session
-        return Response({"success": "User logged in successfully"}, status=status.HTTP_200_OK)
+        login(request, user)
+
+        # Check for missing data in the Users table
+        user_profile = Users.objects.get(user=user)
+        missing_data = (
+            not user_profile.firstName or
+            not user_profile.lastName or
+            not user_profile.country or
+            not user_profile.province or
+            not user_profile.municipality or
+            not user_profile.settlement or
+            not user_profile.street or
+            not user_profile.house or
+            not user_profile.phone or
+            not user_profile.language
+        )
+
+        if missing_data:
+            return JsonResponse({"redirect": "/profile"}, status=200)
+        else:
+            return JsonResponse({"redirect": "/dashboard"}, status=200)
     else:
-        return Response({"error": "Invalid username or password"}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({"error": "Invalid credentials"}, status=400)
+    
+@api_view(['GET', 'POST'])
+def profile_view(request):
+    user = request.user
+    user_profile = Users.objects.get(user=user)
+    
+    if request.method == 'GET':
+        profile_data = {
+            "firstName": user_profile.firstName,
+            "lastName": user_profile.lastName,
+            "country": user_profile.country,
+            "province": user_profile.province,
+            "municipality": user_profile.municipality,
+            "settlement": user_profile.settlement,
+            "street": user_profile.street,
+            "house": user_profile.house,
+            "apartment": user_profile.apartment,
+            "phone": user_profile.phone,
+            "language": user_profile.language,
+        }
+        return JsonResponse(profile_data)
+
+    elif request.method == 'POST':
+        # Update profile data
+        user_profile.firstName = request.data.get('firstName', user_profile.firstName)
+        user_profile.lastName = request.data.get('lastName', user_profile.lastName)
+        user_profile.country = request.data.get('country', user_profile.country)
+        user_profile.province = request.data.get('province', user_profile.province)
+        user_profile.municipality = request.data.get('municipality', user_profile.municipality)
+        user_profile.settlement = request.data.get('settlement', user_profile.settlement)
+        user_profile.street = request.data.get('street', user_profile.street)
+        user_profile.house = request.data.get('house', user_profile.house)
+        user_profile.apartment = request.data.get('apartment', user_profile.apartment)
+        user_profile.phone = request.data.get('phone', user_profile.phone)
+        user_profile.language = request.data.get('language', user_profile.language)
+
+        user_profile.save()
+        return JsonResponse({"success": "Profile updated successfully"})

@@ -1,40 +1,13 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';  // For navigation after login
+import { useNavigate } from 'react-router-dom';
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
     username: '',
-    password: '',
+    password: ''
   });
   const [errors, setErrors] = useState({});
-  const [successMessage, setSuccessMessage] = useState('');
-  const navigate = useNavigate();  // Hook for navigation
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    try {
-      const response = await fetch('http://127.0.0.1:8000/api/login/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-        credentials: 'include',  // Include cookies for session
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSuccessMessage('User logged in successfully!');
-        navigate('/dashboard');  // Redirect to dashboard or any protected page after successful login
-      } else {
-        const errorData = await response.json();
-        setErrors(errorData);
-      }
-    } catch (error) {
-      console.error('Error logging in', error);
-    }
-  };
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -42,6 +15,27 @@ const LoginForm = () => {
       ...formData,
       [name]: value,
     });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/login/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        navigate('/profile');  // Redirect to profile page on successful login
+      } else {
+        const errorData = await response.json();
+        setErrors(errorData);
+      }
+    } catch (error) {
+      console.error('Error logging in', error);
+    }
   };
 
   return (
@@ -70,7 +64,7 @@ const LoginForm = () => {
 
       <button type="submit">Login</button>
 
-      {successMessage && <p>{successMessage}</p>}
+      {errors.non_field_errors && <p>{errors.non_field_errors}</p>}
     </form>
   );
 };
