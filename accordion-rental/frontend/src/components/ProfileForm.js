@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+
+
 const ProfileForm = () => {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -20,23 +22,38 @@ const ProfileForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
     try {
+      // Get the CSRF token first
+      const csrfToken = await getCSRFToken();
+  
       const response = await fetch('http://127.0.0.1:8000/api/profile/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken, // Pass CSRF token in headers
+        },
         body: JSON.stringify(formData),
-        credentials: 'include',  // Include session cookie
+        credentials: 'include',
       });
-
+  
       if (response.ok) {
-        navigate('/dashboard');  // Redirect to dashboard on success
+        navigate('/dashboard'); // Redirect to dashboard on success
       } else {
         const errorData = await response.json();
-        setErrors(errorData);  // Set validation errors
+        setErrors(errorData); // Set validation errors
       }
     } catch (error) {
       console.error('Error updating profile', error);
     }
+  };
+
+  const getCSRFToken = async () => {
+    const response = await fetch('http://127.0.0.1:8000/api/csrf/', {
+      credentials: 'include',
+    });
+    const data = await response.json();
+    return data.csrfToken; // assuming backend returns {'csrfToken': '<token>'}
   };
 
   // Fetch user data from backend

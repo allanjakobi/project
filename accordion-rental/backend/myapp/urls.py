@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from . import views
 from .views import AvailableInstrumentsViewSet, RendipillidListCreate, register_user, login_user, profile_view
 from django.contrib import admin
-from .views import admin_view, get_csrf_token
+from .views import admin_view, get_csrf_token, csrf
 
 
 
@@ -33,6 +33,8 @@ urlpatterns = [
     path('invoices/<int:pk>/', views.InvoiceDetail.as_view(), name='invoice-detail'),
     path('invoices/<int:pk>/edit/', views.InvoiceUpdate.as_view(), name='invoice-edit'),
     path('csrf/', get_csrf_token),
+    path('api/csrf/', csrf),
+
 
     # Include the router URLs
     path('api/', include(router.urls)),  # Use this for the API endpoint
