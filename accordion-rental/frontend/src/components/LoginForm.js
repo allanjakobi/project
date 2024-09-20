@@ -14,6 +14,10 @@ const LoginForm = () => {
         const response = await fetch('http://127.0.0.1:8000/api/get_csrf_token/', {
           method: 'GET',
           credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            // include any other headers as needed
+        },
         });
         const data = await response.json();
         setCsrfToken(data.csrfToken); // Save CSRF token to state
