@@ -16,7 +16,7 @@ from django.utils.decorators import method_decorator
 from django.db.models import Q
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from rest_framework import status
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
@@ -153,15 +153,16 @@ def login_user(request):
                     not user_profile.language
                 )
 
+                # Redirect based on missing data
                 if missing_data:
                     return JsonResponse({"redirect": "/profile"}, status=200)
                 else:
-                    return JsonResponse({"redirect": "/dashboard"}, status=200)
+                    return JsonResponse({"redirect": "/"}, status=200)
 
             except Users.DoesNotExist:
                 return JsonResponse({"error": "User profile not found"}, status=400)
         else:
-            return JsonResponse({"error": "Invalid credentials"}, status=400)
+            return JsonResponse({"error": "Incorrect username or password"}, status=400)
     
     return JsonResponse({"error": "Invalid request method"}, status=405)
     
@@ -202,3 +203,18 @@ def profile_view(request):
 
         user_profile.save()
         return JsonResponse({"success": "Profile updated successfully"})
+    
+@api_view(['POST'])
+def logout_user(request):
+    # Log the user out
+    logout(request)
+    
+    # Send a response confirming the logout
+    return JsonResponse({"message": "Logged out successfully"}, status=200)
+
+@api_view(['GET'])
+def check_login(request):
+    if request.user.is_authenticated:
+        return JsonResponse({"logged_in": True}, status=200)
+    else:
+        return JsonResponse({"logged_in": False}, status=401)

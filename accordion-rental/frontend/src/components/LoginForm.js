@@ -14,10 +14,6 @@ const LoginForm = () => {
         const response = await fetch('http://127.0.0.1:8000/api/get_csrf_token/', {
           method: 'GET',
           credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            // include any other headers as needed
-        },
         });
         const data = await response.json();
         setCsrfToken(data.csrfToken); // Save CSRF token to state
@@ -42,17 +38,20 @@ const LoginForm = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          //'X-CSRFToken': csrfToken, // Include CSRF token in the headers
+          //'X-CSRFToken': csrfToken, // Include CSRF token in the headers if required
         },
         body: JSON.stringify(formData),
         credentials: 'include',
       });
 
       if (response.ok) {
-        navigate('/profile');  // Redirect to profile page on successful login
+        const data = await response.json();
+        if (data.redirect) {
+          navigate(data.redirect);  // Redirect to either profile or dashboard
+        }
       } else {
         const errorData = await response.json();
-        setErrors(errorData);
+        setErrors(errorData);  // Set error message from backend
       }
     } catch (error) {
       console.error('Error logging in:', error);
@@ -85,7 +84,7 @@ const LoginForm = () => {
 
       <button type="submit">Login</button>
 
-      {errors.non_field_errors && <p>{errors.non_field_errors}</p>}
+      {errors.error && <p>{errors.error}</p>} {/* Display error message for incorrect login */}
     </form>
   );
 };
