@@ -1,3 +1,4 @@
+//registerForm.js
 //import Cookies from 'js-cookie';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';  // For redirecting to login page

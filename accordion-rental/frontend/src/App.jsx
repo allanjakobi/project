@@ -10,33 +10,18 @@ import RegisterForm from './components/RegisterForm';
 import Profile from './components/ProfileForm';
 
 function App() {
-  const [loggedInUser, setLoggedInUser] = useState(null);
-
-  useEffect(() => {
-    const username = localStorage.getItem('username');
-    if (username) {
-      setLoggedInUser(username);
-    }
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.clear();
-    setLoggedInUser(null);
-  };
-
   return (
     <Router>
-      {/* Use your Chakra Button component */}
-      <Button colorScheme="teal" onClick={handleLogout}>
-        Logout
-      </Button>
+      <Navbar /> 
       <Routes>
+        {/* Use 'element' instead of 'component', and pass the components as JSX elements */}
         <Route path="/" element={<AccordionList />} />
         <Route path="/register" element={<RegisterForm />} />
         <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile" element={<Profile />} /> {/* Define the profile route */}
         <Route path="/login" element={<LoginForm />} />
         <Route path="/logout" element={<Logout />} />
+        
       </Routes>
     </Router>
   );
