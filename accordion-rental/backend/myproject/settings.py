@@ -8,7 +8,8 @@ SECRET_KEY = 'your-secure-secret-key'
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'your_domain.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'corsheaders',
@@ -43,10 +44,12 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 # Ensure the CSRF cookie has the correct attributes for cross-site requests
 CSRF_COOKIE_SAMESITE = 'None'
+
 CSRF_COOKIE_SECURE = True
-""" CORS_ORIGIN_WHITELIST = [
+CSRF_COOKIE_HTTPONLY = False
+CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000',  # Add your frontend domain here
-] """
+]
 
 # This ensures the session cookie also follows the same rules (if applicable)
 SESSION_COOKIE_SAMESITE = 'None'
