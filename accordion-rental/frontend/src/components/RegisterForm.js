@@ -2,6 +2,8 @@
 //import Cookies from 'js-cookie';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';  // For redirecting to login page
+import { Box, FormControl, FormLabel, Input, Button, VStack, Text } from "@chakra-ui/react";
+
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -84,55 +86,65 @@ const RegisterForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label>Username:</label>
-        <input
-          type="text"
-          name="username"
-          value={formData.username}
-          onChange={handleInputChange}
-        />
-        {errors.username && <span>{errors.username}</span>}
-      </div>
+    <Box bg="gray.100" p={8} borderRadius="md" boxShadow="lg" maxW="md" mx="auto" mt={10}>
+      <form onSubmit={handleSubmit}>
+        <VStack spacing={5}>
+          <FormControl isInvalid={errors.username}>
+            <FormLabel htmlFor="username">Username</FormLabel>
+            <Input
+              type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleInputChange}
+              placeholder="Enter your username"
+            />
+            {errors.username && <Text color="red.500">{errors.username}</Text>}
+          </FormControl>
 
-      <div>
-        <label>Email:</label>
-        <input
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleInputChange}
-        />
-        {errors.email && <span>{errors.email}</span>}
-      </div>
+          <FormControl isInvalid={errors.email}>
+            <FormLabel htmlFor="email">Email</FormLabel>
+            <Input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              placeholder="Enter your email"
+            />
+            {errors.email && <Text color="red.500">{errors.email}</Text>}
+          </FormControl>
 
-      <div>
-        <label>Password:</label>
-        <input
-          type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleInputChange}
-        />
-        {errors.password && <span>{errors.password}</span>}
-      </div>
+          <FormControl isInvalid={errors.password}>
+            <FormLabel htmlFor="password">Password</FormLabel>
+            <Input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              placeholder="Enter your password"
+            />
+            {errors.password && <Text color="red.500">{errors.password}</Text>}
+          </FormControl>
 
-      <div>
-        <label>Confirm Password:</label>
-        <input
-          type="password"
-          name="confirmPassword"  // Handle confirm password
-          value={formData.confirmPassword}
-          onChange={handleInputChange}
-        />
-        {passwordError && <span>{passwordError}</span>}  {/* Display password mismatch error */}
-      </div>
+          <FormControl isInvalid={passwordError}>
+            <FormLabel htmlFor="confirmPassword">Confirm Password</FormLabel>
+            <Input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleInputChange}
+              placeholder="Confirm your password"
+            />
+            {passwordError && <Text color="red.500">{passwordError}</Text>}
+          </FormControl>
 
-      <button type="submit">Register</button>
+          <Button type="submit" colorScheme="teal" size="lg" w="full">
+            Register
+          </Button>
 
-      {successMessage && <p>{successMessage}</p>}
-    </form>
+          {successMessage && <Text color="green.500">{successMessage}</Text>}
+        </VStack>
+      </form>
+    </Box>
   );
 };
 

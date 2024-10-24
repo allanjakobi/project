@@ -1,5 +1,9 @@
-import { Link } from 'react-router-dom';
+
 import { useState, useEffect } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
+
+import { Box, Flex, HStack, Link, Button } from '@chakra-ui/react';
+
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -28,39 +32,84 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav>
-      <ul>
-        <li>
-          <Link to="/">Available Instruments</Link>
-        </li>
+    <Box bg="teal.500" px={4}>
+      <Flex h={16} alignItems="center" justifyContent="space-between">
+        {/* Left side - Available Instruments */}
+        <HStack spacing={8} alignItems="center">
+          <Link
+            as={RouterLink}
+            to="/"
+            fontWeight="bold"
+            color="white"
+            _hover={{ textDecoration: 'underline', color: 'teal.100' }}
+          >
+            Available Instruments
+          </Link>
+        </HStack>
 
-        {isLoggedIn ? (
-          <>
-            <li>
-              <Link to="/contracts">Contracts</Link>
-            </li>
-            <li>
-              <Link to="/invoices">Invoices</Link>
-            </li>
-            <li>
-              <Link to="/profile">Profile</Link>
-            </li>
-            <li>
-              <Link to="/logout">Logout</Link>
-            </li>
-          </>
-        ) : (
-          <>
-            <li>
-              <Link to="/register">Register</Link>
-            </li>
-            <li>
-              <Link to="/login">Login</Link>
-            </li>
-          </>
-        )}
-      </ul>
-    </nav>
+        {/* Right side - Conditional navigation based on login status */}
+        <HStack as="nav" spacing={4}>
+          {isLoggedIn ? (
+            <>
+              <Link
+                as={RouterLink}
+                to="/contracts"
+                color="white"
+                _hover={{ textDecoration: 'underline', color: 'teal.100' }}
+              >
+                Contracts
+              </Link>
+              <Link
+                as={RouterLink}
+                to="/invoices"
+                color="white"
+                _hover={{ textDecoration: 'underline', color: 'teal.100' }}
+              >
+                Invoices
+              </Link>
+              <Link
+                as={RouterLink}
+                to="/profile"
+                color="white"
+                _hover={{ textDecoration: 'underline', color: 'teal.100' }}
+              >
+                Profile
+              </Link>
+              <Button
+                as={RouterLink}
+                to="/logout"
+                colorScheme="teal"
+                variant="solid"
+                size="sm"
+              >
+                Logout
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                as={RouterLink}
+                to="/register"
+                colorScheme="teal"
+                variant="outline"
+                size="sm"
+              >
+                Register
+              </Button>
+              <Button
+                as={RouterLink}
+                to="/login"
+                colorScheme="teal"
+                variant="solid"
+                size="sm"
+              >
+                Login
+              </Button>
+            </>
+          )}
+        </HStack>
+      </Flex>
+    </Box>
   );
 };
 

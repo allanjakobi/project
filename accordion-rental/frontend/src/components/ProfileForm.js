@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Box, Button, Input, VStack, HStack, Text, SimpleGrid } from "@chakra-ui/react";
+
 
 
 
@@ -95,89 +97,132 @@ const ProfileForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="text"
-        name="firstName"
-        value={formData.firstName}
-        onChange={handleInputChange}
-        placeholder="First Name"
-      />
-      <input
-        type="text"
-        name="lastName"
-        value={formData.lastName}
-        onChange={handleInputChange}
-        placeholder="Last Name"
-      />
-      <input
-        type="text"
-        name="country"
-        value={formData.country}
-        onChange={handleInputChange}
-        placeholder="Country"
-      />
-      <input
-        type="text"
-        name="province"
-        value={formData.province}
-        onChange={handleInputChange}
-        placeholder="Province"
-      />
-      <input
-        type="text"
-        name="municipality"
-        value={formData.municipality}
-        onChange={handleInputChange}
-        placeholder="Municipality"
-      />
-      <input
-        type="text"
-        name="settlement"
-        value={formData.settlement}
-        onChange={handleInputChange}
-        placeholder="Settlement"
-      />
-      <input
-        type="text"
-        name="street"
-        value={formData.street}
-        onChange={handleInputChange}
-        placeholder="Street"
-      />
-      <input
-        type="text"
-        name="house"
-        value={formData.house}
-        onChange={handleInputChange}
-        placeholder="House"
-      />
-      <input
-        type="text"
-        name="apartment"
-        value={formData.apartment}
-        onChange={handleInputChange}
-        placeholder="Apartment"
-      />
-      <input
-        type="text"
-        name="phone"
-        value={formData.phone}
-        onChange={handleInputChange}
-        placeholder="Phone"
-      />
-      <input
-        type="text"
-        name="language"
-        value={formData.language}
-        onChange={handleInputChange}
-        placeholder="Language"
-      />
-      <button type="submit">Save Profile</button>
-      {errors && Object.keys(errors).map((key) => (
-        <p key={key}>{errors[key]}</p>
-      ))}
-    </form>
+    <Box
+      maxW="600px"
+      mx="auto"
+      p={8}
+      borderWidth={1}
+      borderRadius="lg"
+      boxShadow="xl"
+      bg="gray.50"
+    >
+      <Text fontSize="2xl" fontWeight="bold" mb={6} textAlign="center" color="teal.500">
+        Update Profile
+      </Text>
+      <form onSubmit={handleSubmit}>
+        <VStack spacing={4}>
+          <SimpleGrid columns={2} spacing={4} w="full">
+            <Input
+              placeholder="First Name"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleInputChange}
+              bg="white"
+              _placeholder={{ color: "gray.500" }}
+            />
+            <Input
+              placeholder="Last Name"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleInputChange}
+              bg="white"
+              _placeholder={{ color: "gray.500" }}
+            />
+          </SimpleGrid>
+
+          <SimpleGrid columns={2} spacing={4} w="full">
+            <Input
+              placeholder="Country"
+              name="country"
+              value={formData.country}
+              onChange={handleInputChange}
+              bg="white"
+              _placeholder={{ color: "gray.500" }}
+            />
+            <Input
+              placeholder="Province"
+              name="province"
+              value={formData.province}
+              onChange={handleInputChange}
+              bg="white"
+              _placeholder={{ color: "gray.500" }}
+            />
+          </SimpleGrid>
+
+          <Input
+            placeholder="Municipality"
+            name="municipality"
+            value={formData.municipality}
+            onChange={handleInputChange}
+            bg="white"
+            _placeholder={{ color: "gray.500" }}
+          />
+          <Input
+            placeholder="Settlement"
+            name="settlement"
+            value={formData.settlement}
+            onChange={handleInputChange}
+            bg="white"
+            _placeholder={{ color: "gray.500" }}
+          />
+          <Input
+            placeholder="Street"
+            name="street"
+            value={formData.street}
+            onChange={handleInputChange}
+            bg="white"
+            _placeholder={{ color: "gray.500" }}
+          />
+          
+          <SimpleGrid columns={3} spacing={4} w="full">
+            <Input
+              placeholder="House"
+              name="house"
+              value={formData.house}
+              onChange={handleInputChange}
+              bg="white"
+              _placeholder={{ color: "gray.500" }}
+            />
+            <Input
+              placeholder="Apartment"
+              name="apartment"
+              value={formData.apartment}
+              onChange={handleInputChange}
+              bg="white"
+              _placeholder={{ color: "gray.500" }}
+            />
+            <Input
+              placeholder="Phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleInputChange}
+              bg="white"
+              _placeholder={{ color: "gray.500" }}
+            />
+          </SimpleGrid>
+
+          <Input
+            placeholder="Language"
+            name="language"
+            value={formData.language}
+            onChange={handleInputChange}
+            bg="white"
+            _placeholder={{ color: "gray.500" }}
+          />
+
+          <Button colorScheme="teal" w="full" size="lg" type="submit">
+            Save Profile
+          </Button>
+
+          {errors &&
+            Object.keys(errors).map((key) => (
+              <Text key={key} color="red.500">
+                {errors[key]}
+              </Text>
+            ))}
+        </VStack>
+      </form>
+    </Box>
   );
 };
 
