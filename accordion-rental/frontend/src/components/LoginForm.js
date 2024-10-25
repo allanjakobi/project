@@ -3,7 +3,7 @@ import { useNavigate, Link as RouterLink  } from 'react-router-dom';
 import { Box, Button, Input, VStack, Text, Checkbox, Link } from "@chakra-ui/react";
 
 
-const LoginForm = () => {
+const LoginForm = ({ setIsLoggedIn }) => {
   const [formData, setFormData] = useState({ username: '', password: '' });
   const [csrfToken, setCsrfToken] = useState(null); // State for CSRF token
   const [errors, setErrors] = useState({});
@@ -41,21 +41,21 @@ const LoginForm = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken, // Include CSRF token if needed
+          'X-CSRFToken': csrfToken,
         },
         body: JSON.stringify(formData),
-        credentials: 'include', // Important to include cookies
+        credentials: 'include',
       });
-  
-      if (response.ok) {
-        // You can fetch a new CSRF token or just navigate
-        navigate('/profile');
-      } else {
-        const errorData = await response.json();
-        setErrors(errorData);
+    
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} ${response.statusText}`);
       }
+      const data = await response.json();
+      setIsLoggedIn(true);
+      console.log('Login successful:', data);
+      navigate("/profile")
     } catch (error) {
-      console.error('Error logging in:', error);
+      console.error('Login error:', error);
     }
   };
 

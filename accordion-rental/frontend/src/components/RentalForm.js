@@ -1,29 +1,165 @@
 // src/components/RentalForm.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Text,
+  FormControl,
+  FormLabel,
+  Input,
+  Textarea,
+  Button,
+  VStack,
+  Divider,
+  Spinner,
+  useToast,
+} from '@chakra-ui/react';
 
-const RentalForm = ({ accordionId }) => {
+const RentalForm = ({ userId }) => {
+  const location = useLocation();
+  const instrument = location.state?.instrument; // Access instrument data passed from previous component
   const [rentalPeriod, setRentalPeriod] = useState(1);
+  const [additionalInfo, setAdditionalInfo] = useState('');
+  const [rate, setRate] = useState(null);
+  const navigate = useNavigate();
+  const toast = useToast();
 
-  const handleSubmit = (e) => {
+  // Fetch rate based on price_level when the component mounts
+  useEffect(() => {
+    if (instrument?.price_level) {
+      fetch(`/api/rates/${instrument.price_level}`)
+        .then(response => response.json())
+        .then(data => setRate(data.rate))
+        .catch(error => {
+          console.error('Error fetching rate:', error);
+          toast({
+            title: "Error loading rate",
+            description: "Unable to retrieve rental rate information.",
+            status: "error",
+            duration: 4000,
+            isClosable: true,
+          });
+        });
+    }
+  }, [instrument, toast]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    fetch(`/api/rent/${accordionId}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ months: rentalPeriod }),
-    })
-      .then(response => response.json())
-      .then(data => console.log('Rental agreement created:', data))
-      .catch(error => console.error('Error creating rental agreement:', error));
+
+    const agreementData = {
+      userId: userId,
+      instrumentId: instrument?.id,
+      startDate: new Date().toISOString(),
+      months: rentalPeriod,
+      rate: rate,
+      info: additionalInfo,
+      status: 'created',
+    };
+
+    try {
+      const response = await fetch('/api/agreements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(agreementData),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Agreement created",
+          description: "Your rental agreement has been successfully submitted.",
+          status: "success",
+          duration: 4000,
+          isClosable: true,
+        });
+        navigate('/profile'); // Redirect after successful submission
+      } else {
+        toast({
+          title: "Error",
+          description: "There was an issue submitting your agreement.",
+          status: "error",
+          duration: 4000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      console.error('Error creating rental agreement:', error);
+      toast({
+        title: "Submission failed",
+        description: "Network error during agreement submission.",
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <label>
-        Rental Period (months):
-        <input type="number" value={rentalPeriod} onChange={(e) => setRentalPeriod(e.target.value)} min="1" />
-      </label>
-      <button type="submit">Submit Rental Agreement</button>
-    </form>
+    <Box p={8} bg="gray.100" minH="100vh" display="flex" justifyContent="center" alignItems="center">
+      <Box
+        p={6}
+        maxW="600px"
+        w="full"
+        boxShadow="lg"
+        rounded="lg"
+        bg="white"
+      >
+        <VStack spacing={4} align="stretch">
+          <Text fontSize="2xl" fontWeight="bold" color="teal.600" mb={4}>
+            Rental Agreement for {instrument?.modelId.brand} {instrument?.modelId.model}
+          </Text>
+          <Divider />
+
+          <Box>
+            <Text fontSize="lg" color="gray.600">Price Level: {instrument?.price_level}</Text>
+            <Text fontSize="lg" color="gray.600">
+              Rental Rate: {rate ? `$${rate}` : <Spinner size="xs" color="teal.500" />}
+            </Text>
+          </Box>
+
+          <FormControl id="rentalPeriod" isRequired>
+            <FormLabel>Rental Period (months)</FormLabel>
+            <Input
+              type="number"
+              value={rentalPeriod}
+              onChange={(e) => setRentalPeriod(e.target.value)}
+              min="1"
+              bg="gray.50"
+              placeholder="Enter rental duration in months"
+            />
+          </FormControl>
+
+          <FormControl id="additionalInfo">
+            <FormLabel>Additional Information</FormLabel>
+            <Textarea
+              value={additionalInfo}
+              onChange={(e) => setAdditionalInfo(e.target.value)}
+              placeholder="Add any relevant notes"
+              bg="gray.50"
+              resize="vertical"
+            />
+          </FormControl>
+
+          <Divider />
+
+          <Text fontSize="lg" fontWeight="bold">Summary:</Text>
+          <Text fontSize="md">Brand: {instrument?.modelId.brand}</Text>
+          <Text fontSize="md">Model: {instrument?.modelId.model}</Text>
+          <Text fontSize="md">Price Level: {instrument?.price_level}</Text>
+          <Text fontSize="md">Rental Period: {rentalPeriod} months</Text>
+          <Text fontSize="md">Rate: {rate ? `$${rate}` : 'Loading...'}</Text>
+
+          <Button
+            mt={4}
+            colorScheme="teal"
+            size="lg"
+            type="submit"
+            onClick={handleSubmit}
+          >
+            Submit Rental Agreement
+          </Button>
+        </VStack>
+      </Box>
+    </Box>
   );
 };
 

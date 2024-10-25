@@ -5,7 +5,7 @@ import {
 } from "@chakra-ui/react";
 import InstrumentDetails from './InstrumentDetails'; // Import the detailed component
 
-const AccordionList = () => {
+const AccordionList = ({ isLoggedIn }) => {
   const [instruments, setInstruments] = useState([]);
   const [loading, setLoading] = useState(true); // For showing a loading state
   const [error, setError] = useState(null);
@@ -45,6 +45,7 @@ const AccordionList = () => {
         <InstrumentDetails 
           instrument={selectedInstrument} 
           onBack={() => setSelectedInstrument(null)} // Pass the onBack function
+          isLoggedIn={isLoggedIn}  // Pass isLoggedIn prop
         />
       ) : (
         <>

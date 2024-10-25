@@ -54,6 +54,7 @@ CORS_ORIGIN_WHITELIST = [
 # This ensures the session cookie also follows the same rules (if applicable)
 SESSION_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = False
 
 
 ROOT_URLCONF = 'myproject.urls'

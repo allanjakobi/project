@@ -1,12 +1,22 @@
 import React from 'react';
 import { Box, Image, Text, Button, VStack, useBreakpointValue } from "@chakra-ui/react";
+import { useNavigate } from 'react-router-dom';
 
-const InstrumentDetails = ({ instrument, onBack }) => {
-  // Select appropriate image based on device size
+const InstrumentDetails = ({ instrument, onBack, isLoggedIn }) => {
+  const navigate = useNavigate();
+  
   const imageUrl = useBreakpointValue({
-    base: instrument.mobile_image,    // for mobile devices
-    md: instrument.desktop_image,     // for medium and larger devices
+    base: instrument.mobile_image,
+    md: instrument.desktop_image,
   });
+
+  const handleReserve = () => {
+    if (isLoggedIn) {
+      navigate('/rent', { state: { instrument } });
+    } else {
+      navigate('/login');
+    }
+  };
 
   return (
     <Box p={5} maxW="800px" mx="auto" boxShadow="md" borderRadius="lg" bg="white">
@@ -41,7 +51,7 @@ const InstrumentDetails = ({ instrument, onBack }) => {
         <Text>{instrument.info_eng}</Text>
 
         {instrument.status === 'Available' && (
-          <Button colorScheme="teal" size="lg" mt={4}>
+          <Button colorScheme="teal" size="lg" mt={4} onClick={handleReserve}>
             Reserve
           </Button>
         )}

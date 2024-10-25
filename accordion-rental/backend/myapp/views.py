@@ -1,11 +1,13 @@
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
 from rest_framework import generics
-from .models import Model, Rendipillid, Users
+from .models import Agreements, Rates, Rendipillid, Users
 from .serializers import ModelSerializer, RendipillidSerializer
 from django.shortcuts import render
 from .forms import RendipillidForm
-from .models import Rendipillid
+from .models import Rendipillid, Model
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from .models import Invoices
@@ -21,6 +23,7 @@ from rest_framework import status
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie
+from datetime import datetime
 import json
 
 
@@ -116,55 +119,49 @@ def register_user(request):
 def csrf(request):
     return JsonResponse({'csrfToken': get_token(request)})
 
+##@csrf_exempt  # Remove this after testing
 @api_view(['POST'])
 def login_user(request):
-    if request.method == 'POST':
-        # Parse JSON data from the request body
+    # Use request.data to get parsed JSON directly
+    data = request.data
+    username = data.get('username')
+    password = data.get('password')
+
+    # Authenticate the user
+    user = authenticate(request, username=username, password=password)
+
+    if user is not None:
+        # Log the user in (sets session)
+        login(request, user)
+
         try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON"}, status=400)
+            # Fetch user profile
+            user_profile = Users.objects.get(user=user)
 
-        username = data.get('username')
-        password = data.get('password')
+            # Check if any required fields are missing
+            missing_data = (
+                not user_profile.firstName or
+                not user_profile.lastName or
+                not user_profile.country or
+                not user_profile.province or
+                not user_profile.municipality or
+                not user_profile.settlement or
+                not user_profile.street or
+                not user_profile.house or
+                not user_profile.phone or
+                not user_profile.language
+            )
 
-        # Authenticate the user
-        user = authenticate(request, username=username, password=password)
+            # Redirect based on missing data
+            if missing_data:
+                return JsonResponse({"redirect": "/profile"}, status=200)
+            else:
+                return JsonResponse({"redirect": "/"}, status=200)
 
-        if user is not None:
-            # Log the user in (sets session)
-            login(request, user)
-
-            try:
-                # Fetch user profile
-                user_profile = Users.objects.get(user=user)
-
-                # Check if any required fields are missing
-                missing_data = (
-                    not user_profile.firstName or
-                    not user_profile.lastName or
-                    not user_profile.country or
-                    not user_profile.province or
-                    not user_profile.municipality or
-                    not user_profile.settlement or
-                    not user_profile.street or
-                    not user_profile.house or
-                    not user_profile.phone or
-                    not user_profile.language
-                )
-
-                # Redirect based on missing data
-                if missing_data:
-                    return JsonResponse({"redirect": "/profile"}, status=200)
-                else:
-                    return JsonResponse({"redirect": "/"}, status=200)
-
-            except Users.DoesNotExist:
-                return JsonResponse({"error": "User profile not found"}, status=400)
-        else:
-            return JsonResponse({"error": "Incorrect username or password"}, status=400)
-    
-    return JsonResponse({"error": "Invalid request method"}, status=405)
+        except Users.DoesNotExist:
+            return JsonResponse({"error": "User profile not found"}, status=400)
+    else:
+        return JsonResponse({"error": "Incorrect username or password"}, status=400)
     
 @api_view(['GET', 'POST'])
 def profile_view(request):
@@ -200,6 +197,7 @@ def profile_view(request):
         user_profile.apartment = request.data.get('apartment', user_profile.apartment)
         user_profile.phone = request.data.get('phone', user_profile.phone)
         user_profile.language = request.data.get('language', user_profile.language)
+        
 
         user_profile.save()
         return JsonResponse({"success": "Profile updated successfully"})
@@ -218,3 +216,50 @@ def check_login(request):
         return JsonResponse({"logged_in": True}, status=200)
     else:
         return JsonResponse({"logged_in": False}, status=401)
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])  # Only allow authenticated users
+@csrf_exempt  # Make sure to include CSRF token handling in frontend
+def create_agreement(request):
+    try:
+        data = json.loads(request.body)
+        user = request.user
+        instrument_id = data.get('instrumentId')
+        rental_period = data.get('months')
+        additional_info = data.get('info')
+        price_level_id = data.get('rate')
+
+        # Retrieve the rate based on price level
+        rate = Rates.objects.get(id=price_level_id).rate
+        instrument = Rendipillid.objects.get(id=instrument_id)
+
+        # Create a new agreement
+        agreement = Agreements.objects.create(
+            user=user,
+            instrument=instrument,
+            start_date=datetime.now(),
+            months=rental_period,
+            rate=rate,
+            additional_info=additional_info,
+            status='created'
+        )
+
+        return JsonResponse({
+            "message": "Agreement created successfully.",
+            "agreement_id": agreement.id,
+            "instrument": {
+                "brand": instrument.modelId.brand,
+                "model": instrument.modelId.model,
+                "price_level": price_level_id,
+                "rate": rate
+            },
+            "rental_period": rental_period,
+            "start_date": agreement.start_date,
+        }, status=201)
+
+    except Rates.DoesNotExist:
+        return JsonResponse({"error": "Rate not found for specified price level."}, status=400)
+    except Rendipillid.DoesNotExist:
+        return JsonResponse({"error": "Instrument not found."}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

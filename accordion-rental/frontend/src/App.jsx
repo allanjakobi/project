@@ -8,20 +8,39 @@ import Logout from './components/Logout';
 import Navbar from './components/Navbar';
 import RegisterForm from './components/RegisterForm';
 import Profile from './components/ProfileForm';
+import ProtectedRoute from './components/ProtectedRoute'; // Import the ProtectedRoute
+import RentalForm from './components/RentalForm';
+
+
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   return (
     <Router>
-      <Navbar /> 
+      <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       <Routes>
-        {/* Use 'element' instead of 'component', and pass the components as JSX elements */}
-        <Route path="/" element={<AccordionList />} />
-        <Route path="/register" element={<RegisterForm />} />
+      <Route path="/" element={<AccordionList isLoggedIn={isLoggedIn} />} />
+      <Route path="/register" element={<RegisterForm />} />
         <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/profile" element={<Profile />} /> {/* Define the profile route */}
-        <Route path="/login" element={<LoginForm />} />
-        <Route path="/logout" element={<Logout />} />
-        
+        <Route 
+          path="/profile" 
+          element={
+            <ProtectedRoute isLoggedIn={isLoggedIn}>
+              <Profile />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/rent" 
+          element={
+            <ProtectedRoute isLoggedIn={isLoggedIn}>
+              <RentalForm />
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="/login" element={<LoginForm setIsLoggedIn={setIsLoggedIn} />} />
+        <Route path="/logout" element={<Logout setIsLoggedIn={setIsLoggedIn} />} />
       </Routes>
     </Router>
   );

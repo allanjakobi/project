@@ -1,15 +1,10 @@
-
 import { useState, useEffect } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
-
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { Box, Flex, HStack, Link, Button } from '@chakra-ui/react';
 
-
-const Navbar = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
+const Navbar = ({ isLoggedIn, setIsLoggedIn }) => {
+  const navigate = useNavigate();
   useEffect(() => {
-    // Check if user is logged in by verifying session token
     const checkLoginStatus = async () => {
       try {
         const response = await fetch('http://127.0.0.1:8000/api/check_login/', {
@@ -24,12 +19,12 @@ const Navbar = () => {
         }
       } catch (error) {
         console.error('Error checking login status:', error);
-        setIsLoggedIn(false); // Default to not logged in on error
+        setIsLoggedIn(false);
       }
     };
 
     checkLoginStatus();
-  }, []);
+  }, [setIsLoggedIn]);
 
   return (
     <Box bg="teal.500" px={4}>
@@ -51,33 +46,12 @@ const Navbar = () => {
         <HStack as="nav" spacing={4}>
           {isLoggedIn ? (
             <>
-              <Link
-                as={RouterLink}
-                to="/contracts"
-                color="white"
-                _hover={{ textDecoration: 'underline', color: 'teal.100' }}
-              >
-                Contracts
-              </Link>
-              <Link
-                as={RouterLink}
-                to="/invoices"
-                color="white"
-                _hover={{ textDecoration: 'underline', color: 'teal.100' }}
-              >
-                Invoices
-              </Link>
-              <Link
-                as={RouterLink}
-                to="/profile"
-                color="white"
-                _hover={{ textDecoration: 'underline', color: 'teal.100' }}
-              >
-                Profile
-              </Link>
+              <Link as={RouterLink} to="/contracts" color="white" _hover={{ textDecoration: 'underline', color: 'teal.100' }}>Contracts</Link>
+              <Link as={RouterLink} to="/invoices" color="white" _hover={{ textDecoration: 'underline', color: 'teal.100' }}>Invoices</Link>
+              <Link as={RouterLink} to="/profile" color="white" _hover={{ textDecoration: 'underline', color: 'teal.100' }}>Profile</Link>
               <Button
-                as={RouterLink}
-                to="/logout"
+                as="button"
+                onClick={() => navigate("/logout")}
                 colorScheme="teal"
                 variant="solid"
                 size="sm"
@@ -87,24 +61,8 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Button
-                as={RouterLink}
-                to="/register"
-                colorScheme="teal"
-                variant="outline"
-                size="sm"
-              >
-                Register
-              </Button>
-              <Button
-                as={RouterLink}
-                to="/login"
-                colorScheme="teal"
-                variant="solid"
-                size="sm"
-              >
-                Login
-              </Button>
+              <Button as={RouterLink} to="/register" colorScheme="teal" variant="outline" size="sm">Register</Button>
+              <Button as={RouterLink} to="/login" colorScheme="teal" variant="solid" size="sm">Login</Button>
             </>
           )}
         </HStack>
