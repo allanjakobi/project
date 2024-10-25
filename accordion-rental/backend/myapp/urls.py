@@ -27,6 +27,8 @@ urlpatterns = [
     path('api/profile/', profile_view, name='profile_view'),
     path('api/logout/', logout_user, name='logout_user'),
     path('api/agreements/', views.create_agreement, name='create_agreement'),
+    path('api/rates/<int:price_level_id>/', views.get_rate, name='get_rate'),
+
 
 
     path('api/login/', login_user, name='login_user'),

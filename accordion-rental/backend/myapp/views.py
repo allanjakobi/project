@@ -263,3 +263,20 @@ def create_agreement(request):
         return JsonResponse({"error": "Instrument not found."}, status=400)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    
+@api_view(['GET'])
+def get_rate(request, price_level_id):
+    try:
+        # Fetch the rate object based on the price level ID
+        rate = Rates.objects.get(id=price_level_id)
+        
+        return JsonResponse({
+            "id": rate.id,
+            "rate": rate.rate,  # Assuming 'rate' is a field in your Rate model
+            #"price_level": rate.price_level,  # Include any other relevant fields
+        }, status=200)
+
+    except Rates.DoesNotExist:
+        return JsonResponse({"error": "Rate not found."}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

@@ -1,4 +1,3 @@
-// src/components/RentalForm.js
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -18,9 +17,10 @@ import {
 const RentalForm = ({ userId }) => {
   const location = useLocation();
   const instrument = location.state?.instrument; // Access instrument data passed from previous component
-  const [rentalPeriod, setRentalPeriod] = useState(1);
+  const [rentalPeriod, setRentalPeriod] = useState(12);
   const [additionalInfo, setAdditionalInfo] = useState('');
   const [rate, setRate] = useState(null);
+  const [finalRate, setFinalRate] = useState(null); // To hold the final rental rate
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -29,7 +29,10 @@ const RentalForm = ({ userId }) => {
     if (instrument?.price_level) {
       fetch(`/api/rates/${instrument.price_level}`)
         .then(response => response.json())
-        .then(data => setRate(data.rate))
+        .then(data => {
+          setRate(data.rate);
+          setFinalRate(data.rate); // Set the final rate initially to fetched rate
+        })
         .catch(error => {
           console.error('Error fetching rate:', error);
           toast({
@@ -43,6 +46,21 @@ const RentalForm = ({ userId }) => {
     }
   }, [instrument, toast]);
 
+  // Update final rate based on rental period
+  useEffect(() => {
+    if (rate) {
+      let updatedRate;
+      if (rentalPeriod >= 0 && rentalPeriod < 4) {
+        updatedRate = Math.round(rate * 2.1); // 0-3 months
+      } else if (rentalPeriod >= 4 && rentalPeriod < 12) {
+        updatedRate = Math.round(rate * 1.4); // 4-11 months
+      } else {
+        updatedRate = rate; // 12 months or greater
+      }
+      setFinalRate(updatedRate);
+    }
+  }, [rentalPeriod, rate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -51,7 +69,7 @@ const RentalForm = ({ userId }) => {
       instrumentId: instrument?.id,
       startDate: new Date().toISOString(),
       months: rentalPeriod,
-      rate: rate,
+      rate: finalRate, // Use the calculated rental rate
       info: additionalInfo,
       status: 'created',
     };
@@ -146,7 +164,7 @@ const RentalForm = ({ userId }) => {
           <Text fontSize="md">Model: {instrument?.modelId.model}</Text>
           <Text fontSize="md">Price Level: {instrument?.price_level}</Text>
           <Text fontSize="md">Rental Period: {rentalPeriod} months</Text>
-          <Text fontSize="md">Rate: {rate ? `$${rate}` : 'Loading...'}</Text>
+          <Text fontSize="md">Rate: {finalRate !== null ? `$${finalRate} per month` : 'Loading...'}</Text>
 
           <Button
             mt={4}
