@@ -97,12 +97,12 @@ const RentalForm = ({ userId }) => {
     const agreementData = {
       userId: userId,
       instrumentId: instrument?.id,
-      startDate: new Date().toISOString(),
+      startDate: new Date().toISOString().split('T')[0],
       months: rentalPeriod,
       rate: finalRate, // Use the calculated rental rate
       info: additionalInfo,
       invoiceInterval: invoiceInterval, // Include invoice interval in the request
-      status: 'created',
+      status: 'Created',
     };
 
     try {
@@ -122,6 +122,7 @@ const RentalForm = ({ userId }) => {
         });
         navigate('/profile'); // Redirect after successful submission
       } else {
+        console.log("X", JSON.stringify(agreementData))
         toast({
           title: "Error",
           description: "There was an issue submitting your agreement.",
@@ -236,8 +237,8 @@ const RentalForm = ({ userId }) => {
           <Text fontSize="lg" fontWeight="bold">Summary:</Text>
           <Text fontSize="md">Brand: {instrument?.modelId.brand}</Text>
           <Text fontSize="md">Model: {instrument?.modelId.model}</Text>
-          <Text fontSize="md">Price Level: {instrument?.price_level}</Text>
-          <Text fontSize="md">Rental Period: {rentalPeriod} months</Text>
+{/*           <Text fontSize="md">Price Level: {instrument?.price_level}</Text>
+ */}          <Text fontSize="md">Rental Period: {rentalPeriod} months</Text>
           <Text fontSize="md">Rate: {finalRate !== null ? `${finalRate} € per month` : 'Loading...'}</Text>
 
           <Button

@@ -7,7 +7,7 @@ const Navbar = ({ isLoggedIn, setIsLoggedIn }) => {
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/check_login/', {
+        const response = await fetch('/api/check_login/', {
           method: 'GET',
           credentials: 'include', // Send cookies (session ID, CSRF token)
         });

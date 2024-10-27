@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import timedelta
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -35,27 +36,48 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Your React frontend
-]
-CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",  # Trust the frontend for CSRF
+    "http://localhost:3000",  # Your React frontend
+    "http://127.0.0.1:3000",  # Trust the frontend for CSRF
+    "http://192.168.1.187:3000", 
+
 ]
 # Ensure the CSRF cookie has the correct attributes for cross-site requests
 CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = False
+#CSRF_COOKIE_HTTPONLY = False
 
-CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_HTTPONLY = False
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost:3000',  # Add your frontend domain here
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Your React frontend
+    "http://127.0.0.1:3000",
+    "http://192.168.1.187:3000",  # IP for frontend access
+
+    
 ]
+CORS_ALLOW_CREDENTIALS = True
 
 # This ensures the session cookie also follows the same rules (if applicable)
 SESSION_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_HTTPONLY = False
+SESSION_COOKIE_SECURE = False # Set to True for production
+SESSION_COOKIE_HTTPONLY = True # Set to True for production
+SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
+
+SIMPLE_JWT = {
+    'AUTH_HEADER_TYPES': ('JWT',),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'AUTH_TOKEN_CLASSES': (
+        'rest_framework_simplejwt.tokens.AccessToken',
+    )
+}
 
 ROOT_URLCONF = 'myproject.urls'
 
@@ -77,8 +99,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'myproject.wsgi.application'
 
-SESSION_COOKIE_AGE = 1209600  # 2 weeks
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
 
 
 DATABASES = {

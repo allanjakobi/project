@@ -1,6 +1,7 @@
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from rest_framework import generics
 from .models import Agreements, Rates, Rendipillid, Users
@@ -122,23 +123,21 @@ def csrf(request):
 ##@csrf_exempt  # Remove this after testing
 @api_view(['POST'])
 def login_user(request):
-    # Use request.data to get parsed JSON directly
     data = request.data
     username = data.get('username')
     password = data.get('password')
-
-    # Authenticate the user
     user = authenticate(request, username=username, password=password)
 
     if user is not None:
-        # Log the user in (sets session)
-        login(request, user)
-
         try:
-            # Fetch user profile
             user_profile = Users.objects.get(user=user)
 
-            # Check if any required fields are missing
+            # Generate JWT tokens
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
+
+            # Determine if redirection is needed
             missing_data = (
                 not user_profile.firstName or
                 not user_profile.lastName or
@@ -151,12 +150,33 @@ def login_user(request):
                 not user_profile.phone or
                 not user_profile.language
             )
+            
+            print("access", access_token)
+            print("refresh", refresh_token)
+            redirect_url = "/profile" if missing_data else "/"
 
-            # Redirect based on missing data
-            if missing_data:
-                return JsonResponse({"redirect": "/profile"}, status=200)
-            else:
-                return JsonResponse({"redirect": "/"}, status=200)
+            # Create the response object
+            response = JsonResponse({"redirect": redirect_url})
+
+            # Set cookies for access and refresh tokens
+            response.set_cookie(
+                'access_token',
+                access_token,
+                httponly=True,
+                secure=True,  # Set to False for local development
+                samesite='None',  # Set from Lax to None for local development
+                max_age=3600  # 1 hour
+            )
+            response.set_cookie(
+                'refresh_token',
+                refresh_token,
+                httponly=True,
+                secure=True,  # Set to False for local development
+                samesite='None',  # Set from Lax to None for local development
+                max_age=7 * 24 * 3600  # 7 days
+                        )
+
+            return response
 
         except Users.DoesNotExist:
             return JsonResponse({"error": "User profile not found"}, status=400)
