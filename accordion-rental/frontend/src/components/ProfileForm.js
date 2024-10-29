@@ -2,9 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, Input, VStack, HStack, Text, SimpleGrid } from "@chakra-ui/react";
 
-
-
-
 const ProfileForm = () => {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -29,7 +26,7 @@ const ProfileForm = () => {
       // Get the CSRF token first
       const csrfToken = await getCSRFToken();
   
-      const response = await fetch('http://127.0.0.1:8000/api/profile/', {
+      const response = await fetch('/api/profile/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,7 +48,7 @@ const ProfileForm = () => {
   };
 
   const getCSRFToken = async () => {
-    const response = await fetch('http://127.0.0.1:8000/api/csrf/', {
+    const response = await fetch('/api/csrf/', {
       credentials: 'include',
     });
     const data = await response.json();

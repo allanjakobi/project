@@ -3,7 +3,7 @@ import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Input, VStack, Text, Checkbox, Link } from "@chakra-ui/react";
 
 const LoginForm = ({ setIsLoggedIn }) => {
-  console.log("vite meta env API", import.meta.env);
+  //console.log("vite meta env API", import.meta.env);
   const [formData, setFormData] = useState({ username: '', password: '' });
   const [csrfToken, setCsrfToken] = useState(null);
   const [errors, setErrors] = useState({});

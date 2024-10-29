@@ -123,7 +123,8 @@ def csrf(request):
 ##@csrf_exempt  # Remove this after testing
 @api_view(['POST'])
 def login_user(request):
-    data = request.data
+    #data = request.data
+    data = json.loads(request.body)
     username = data.get('username')
     password = data.get('password')
     user = authenticate(request, username=username, password=password)
@@ -162,17 +163,18 @@ def login_user(request):
             response.set_cookie(
                 'access_token',
                 access_token,
-                httponly=True,
-                secure=True,  # Set to False for local development
-                samesite='None',  # Set from Lax to None for local development
+                httponly=False, # Set to False for local development
+                secure=False,  # Set to False for local development, Ensure this is True in production
+                samesite='Lax',  # Set from Lax to None for local development
                 max_age=3600  # 1 hour
             )
+           
             response.set_cookie(
                 'refresh_token',
                 refresh_token,
-                httponly=True,
-                secure=True,  # Set to False for local development
-                samesite='None',  # Set from Lax to None for local development
+                httponly=False, # Set to False for local development, Ensure this is True in production
+                secure=False,  # Set to False for local development
+                samesite='Lax',  # Set from Lax to None for local development
                 max_age=7 * 24 * 3600  # 7 days
                         )
 
@@ -224,11 +226,23 @@ def profile_view(request):
     
 @api_view(['POST'])
 def logout_user(request):
-    # Log the user out
+    # Log the user out (clears Django session)
     logout(request)
+
+    # Create response with a success message
+    response = JsonResponse({"message": "Logged out successfully"}, status=200)
     
-    # Send a response confirming the logout
-    return JsonResponse({"message": "Logged out successfully"}, status=200)
+    # Delete JWT token cookies
+    response.delete_cookie('access_token')
+    response.delete_cookie('refresh_token')
+    
+    # Delete CSRF cookie, if applicable
+    response.delete_cookie('csrftoken')
+    
+    # Delete Django session cookie, if using sessions
+    response.delete_cookie('sessionid')
+    
+    return response
 
 @api_view(['GET'])
 def check_login(request):
@@ -238,43 +252,56 @@ def check_login(request):
         return JsonResponse({"logged_in": False}, status=401)
     
 @api_view(['POST'])
+@csrf_exempt  # Make sure to include CSRF token handling in frontend#        
 @permission_classes([IsAuthenticated])  # Only allow authenticated users
-@csrf_exempt  # Make sure to include CSRF token handling in frontend
 def create_agreement(request):
+  
+    user = request.user
+    data = json.loads(request.body)
+    authorization_header = request.headers.get('Authorization')
+    print("HEADER: ",request.headers)
+
+    # Extracting instrumentId and other necessary fields
+    instrument_id = data.get('instrumentId')
+    rental_period = data.get('months')
+    additional_info = data.get('info')
+    price_level_id = data.get('rate')
+    invoice_interval = data.get('invoiceInterval')
+    print("QQ")
+
+    # Check if instrument_id is provided
+    if not instrument_id:
+        return JsonResponse({"error": "Instrument ID is required"}, status=400)
+
     try:
-        data = json.loads(request.body)
-        user = request.user
-        instrument_id = data.get('instrumentId')
-        rental_period = data.get('months')
-        additional_info = data.get('info')
-        price_level_id = data.get('rate')
+        # Fetch the instrument instance from the Rendipillid model
+        instrument = Rendipillid.objects.get(id=instrument_id)
 
         # Retrieve the rate based on price level
         rate = Rates.objects.get(id=price_level_id).rate
-        instrument = Rendipillid.objects.get(id=instrument_id)
 
         # Create a new agreement
         agreement = Agreements.objects.create(
-            user=user,
-            instrument=instrument,
-            start_date=datetime.now(),
+            userId=user,
+            instrumentId=instrument,  # Use the fetched instrument instance
+            startDate=datetime.now(),
             months=rental_period,
             rate=rate,
-            additional_info=additional_info,
-            status='created'
+            info=additional_info,
+            status='Created',  # Ensure the status matches your choices
+            invoice_interval=invoice_interval,
         )
 
         return JsonResponse({
             "message": "Agreement created successfully.",
-            "agreement_id": agreement.id,
+            "agreement_id": agreement.agreementId,
             "instrument": {
-                "brand": instrument.modelId.brand,
-                "model": instrument.modelId.model,
+                "instrument_id": instrument.id,
                 "price_level": price_level_id,
                 "rate": rate
             },
             "rental_period": rental_period,
-            "start_date": agreement.start_date,
+            "start_date": agreement.startDate,
         }, status=201)
 
     except Rates.DoesNotExist:
@@ -300,3 +327,21 @@ def get_rate(request, price_level_id):
         return JsonResponse({"error": "Rate not found."}, status=404)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    
+def calculate_reference_number(agreementId):
+    year = datetime.datetime.now().year
+    base_number = f"{year}{agreementId}"
+
+    if not base_number.isdigit():
+        raise ValueError("Base number must be numeric")
+
+    # Calculating control digit (modulo 10 approach)
+    weights = [7, 3, 1]
+    total = 0
+    for i, digit in enumerate(reversed(base_number)):
+        total += int(digit) * weights[i % len(weights)]
+
+    control_digit = (10 - (total % 10)) % 10
+    reference_number = f"{base_number}{control_digit}"
+
+    return int(reference_number)

@@ -29,6 +29,30 @@ const RentalForm = ({ userId }) => {
   const navigate = useNavigate();
   const toast = useToast();
 
+  const getTokenFromCookie = () => {
+    const name = 'access_token=';
+    const decodedCookie = decodeURIComponent(document.cookie); // Decode the cookie
+    const cookieArr = decodedCookie.split(';'); // Split by ';' to get individual cookies
+    
+    // Loop through cookies to find the access_token
+    for (let i = 0; i < cookieArr.length; i++) {
+        let cookie = cookieArr[i].trim(); // Trim whitespace
+        // Check if this cookie starts with access_token=
+        if (cookie.indexOf(name) === 0) {
+            return cookie.substring(name.length, cookie.length); // Return the token value
+        }
+    }
+    return null; // Return null if token not found
+  };
+
+  const getCSRFToken = () => {
+    const name = 'csrftoken'; // Adjust if your CSRF cookie has a different name
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+};
+
   // Fetch rate based on price_level when the component mounts
   useEffect(() => {
     if (instrument?.price_level) {
@@ -84,64 +108,74 @@ const RentalForm = ({ userId }) => {
     e.preventDefault();
 
     if (!termsAccepted) {
-      toast({
-        title: "Terms not accepted",
-        description: "Please confirm that you are familiar with the rental terms.",
-        status: "warning",
-        duration: 4000,
-        isClosable: true,
-      });
-      return; // Prevent submission if terms are not accepted
+        toast({
+            title: "Terms not accepted",
+            description: "Please confirm that you are familiar with the rental terms.",
+            status: "warning",
+            duration: 4000,
+            isClosable: true,
+        });
+        return; // Prevent submission if terms are not accepted
     }
 
     const agreementData = {
-      userId: userId,
-      instrumentId: instrument?.id,
-      startDate: new Date().toISOString().split('T')[0],
-      months: rentalPeriod,
-      rate: finalRate, // Use the calculated rental rate
-      info: additionalInfo,
-      invoiceInterval: invoiceInterval, // Include invoice interval in the request
-      status: 'Created',
+        instrumentId: instrument.instrumentId,
+        months: rentalPeriod,
+        rate: finalRate, // Use the calculated rental rate
+        info: additionalInfo,
+        invoiceInterval: invoiceInterval, // Include invoice interval in the request
     };
 
     try {
-      const response = await fetch('/api/agreements/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(agreementData),
-      });
+      const accessToken = getTokenFromCookie();
+      const csrfToken = getCSRFToken();  // Get the token from cookies
+      //console.log("Access Token Retrieved:", accessToken); // Log the token
 
-      if (response.ok) {
-        toast({
-          title: "Agreement created",
-          description: "Your rental agreement has been successfully submitted.",
-          status: "success",
-          duration: 4000,
-          isClosable: true,
+      if (!accessToken) {
+            throw new Error("No access token found");
+        }
+
+        const response = await fetch('/api/agreements/', {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`, // Include the token in the Authorization header
+                "X-CSRFToken": csrfToken, // Include the CSRF token in the request headers
+
+            },
+            body: JSON.stringify(agreementData),
         });
-        navigate('/profile'); // Redirect after successful submission
-      } else {
-        console.log("X", JSON.stringify(agreementData))
-        toast({
-          title: "Error",
-          description: "There was an issue submitting your agreement.",
-          status: "error",
-          duration: 4000,
-          isClosable: true,
-        });
-      }
+
+        if (response.ok) {
+            toast({
+                title: "Agreement created",
+                description: "Your rental agreement has been successfully submitted.",
+                status: "success",
+                duration: 4000,
+                isClosable: true,
+            });
+            navigate('/profile'); // Redirect after successful submission
+        } else {
+            console.error("Error details:", await response.text()); // Log detailed error message
+            toast({
+                title: "Error",
+                description: "There was an issue submitting your agreement.",
+                status: "error",
+                duration: 4000,
+                isClosable: true,
+            });
+        }
     } catch (error) {
-      console.error('Error creating rental agreement:', error);
-      toast({
-        title: "Submission failed",
-        description: "Network error during agreement submission.",
-        status: "error",
-        duration: 4000,
-        isClosable: true,
-      });
+        console.error('Error creating rental agreement:', error);
+        toast({
+            title: "Submission failed",
+            description: "Network error during agreement submission.",
+            status: "error",
+            duration: 4000,
+            isClosable: true,
+        });
     }
-  };
+};
 
   const handleTermsClick = () => {
     toast({

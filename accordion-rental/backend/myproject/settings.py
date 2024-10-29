@@ -43,7 +43,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 ]
 # Ensure the CSRF cookie has the correct attributes for cross-site requests
-CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SECURE = False
 #CSRF_COOKIE_HTTPONLY = False
 
@@ -65,8 +65,9 @@ SESSION_COOKIE_AGE = 1209600  # 2 weeks
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+   
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
     ],
 }
 
