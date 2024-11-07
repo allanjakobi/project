@@ -10,7 +10,8 @@ const LoginForm = ({ setIsLoggedIn }) => {
   const navigate = useNavigate();
   const [rememberMe, setRememberMe] = useState(false);
   //const apiUrl = import.meta.env.VITE_API;
-  const apiUrl = "192.168.1.187:8000";
+  //const apiUrl = "192.168.1.187:8000";
+  const apiUrl = "localhost:8000";
 
   // Fetch CSRF token on component mount
   useEffect(() => {
@@ -73,7 +74,7 @@ const LoginForm = ({ setIsLoggedIn }) => {
 
       setIsLoggedIn(true);
       console.log('Login successful:', data);
-      //navigate(data.redirect);
+      navigate(data.redirect);
       
     } catch (error) {
       console.error('Login error:', error);

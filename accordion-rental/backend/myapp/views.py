@@ -253,7 +253,7 @@ def check_login(request):
     
 @api_view(['POST'])
 @csrf_exempt  # Make sure to include CSRF token handling in frontend#        
-@permission_classes([IsAuthenticated])  # Only allow authenticated users
+#@permission_classes([IsAuthenticated])  # Only allow authenticated users
 def create_agreement(request):
   
     user = request.user
@@ -267,7 +267,7 @@ def create_agreement(request):
     additional_info = data.get('info')
     price_level_id = data.get('rate')
     invoice_interval = data.get('invoiceInterval')
-    print("QQ")
+    print("QQ", user)
 
     # Check if instrument_id is provided
     if not instrument_id:
