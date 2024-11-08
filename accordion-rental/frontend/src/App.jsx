@@ -10,6 +10,7 @@ import RegisterForm from './components/RegisterForm';
 import Profile from './components/ProfileForm';
 import ProtectedRoute from './components/ProtectedRoute'; // Import the ProtectedRoute
 import RentalForm from './components/RentalForm';
+import Contracts from './components/contracts';
 
 
 
@@ -36,6 +37,14 @@ function App() {
           element={
             <ProtectedRoute isLoggedIn={isLoggedIn}>
               <RentalForm />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/contracts" 
+          element={
+            <ProtectedRoute isLoggedIn={isLoggedIn}>
+              <Contracts />
             </ProtectedRoute>
           } 
         />

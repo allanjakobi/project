@@ -40,21 +40,32 @@ const ProfileForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Get the CSRF token first
+      // Get the CSRF token
       const csrfToken = await getCSRFToken();
       console.log("CSRF Token:", csrfToken);
-
+  
+      // Get the access token
+      const accessToken = document.cookie.split('; ').find(row => row.startsWith('access_token=')).split('=')[1];
+  
+      // Check if accessToken is available
+      if (!accessToken) {
+        console.error("Access token not found.");
+        return;
+      }
+      console.log("Access token : ", accessToken);
+  
       const response = await fetch('http://localhost:8000/api/profile/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`, // Include the access token here
           'X-CSRFToken': csrfToken,
         },
         body: JSON.stringify(formData),
         credentials: 'include',
       });
       console.log("Profile update response:", response);
-
+  
       if (response.ok) {
         console.log("Profile updated successfully.");
         navigate('/'); // Redirect to the main page on success

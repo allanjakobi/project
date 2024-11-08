@@ -32,6 +32,7 @@ from django.contrib.auth.models import User
 import jwt
 from django.shortcuts import get_object_or_404
 import logging
+from dateutil.relativedelta import relativedelta
 
 logger = logging.getLogger(__name__)
 
@@ -195,17 +196,24 @@ def login_user(request):
         return JsonResponse({"error": "Incorrect username or password"}, status=400)
     
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated]) 
 def profile_view(request):
-    print("RUNNNNNNNNNNNNNNNNNNNNNNNING", request.user)
-    user = request.user
+    access_token = request.COOKIES.get('access_token')
     
-    try:
-        user_profile = Users.objects.get(user=user)
-    except Users.DoesNotExist:
-        return Response({"error": "Profile not found"}, status=404)
-    print("RUuxxxxxxxxxxxxxING")
+    # Extract user information from token
+    if access_token:
+        user_id = get_user_id_from_token(access_token)
+        username = get_user_from_token(access_token)
+        
+        if not user_id:
+            return Response({"error": "Invalid or missing access token"}, status=401)
+    else:
+        return Response({"error": "Access token required"}, status=401)
+
+    # Try to fetch or create a user profile based on user_id
+    user_profile, created = Users.objects.get_or_create(user_id=user_id, defaults={'user_id': user_id})
+
     if request.method == 'GET':
+        # Return profile data
         profile_data = {
             "firstName": user_profile.firstName,
             "lastName": user_profile.lastName,
@@ -237,6 +245,8 @@ def profile_view(request):
 
         user_profile.save()
         return Response({"success": "Profile updated successfully"})
+
+    return Response({"error": "Invalid request method"}, status=400)
     
 @api_view(['POST'])
 def logout_user(request):
@@ -373,6 +383,69 @@ def calculate_reference_number(agreementId):
     reference_number = f"{base_number}{control_digit}"
 
     return int(reference_number)
+
+
+@api_view(['GET'])
+def contracts_view(request):
+    access_token = request.COOKIES.get('access_token')
+    user_id = get_user_id_from_token(access_token)
+   
+    try:
+        user_profile = Users.objects.get(user_id=user_id)
+        profileId = user_profile.userId  # Assuming `id` is the primary key in Users
+    except Users.DoesNotExist:
+        return JsonResponse({"error": "User profile not found"}, status=404)
+   
+    
+    agreements = Agreements.objects.filter(userId=profileId)
+    data = []
+    
+    for agreement in agreements:
+        # Get related rendipillid and model
+        try:
+            instrument = Rendipillid.objects.get(instrumentId=agreement.instrumentId_id)
+            model = Model.objects.get(modelId=instrument.modelId_id)
+            
+            image_link = f"/media/700/R{agreement.instrumentId_id}.jpg"
+            
+            end_date = agreement.startDate + relativedelta(months=agreement.months)
+
+            agreement_data = {
+                "agreement": {
+                    "agreementId": agreement.agreementId,
+                    "referenceNr": agreement.referenceNr,
+                    "instrumentID": agreement.instrumentId_id,
+                    "startDate": agreement.startDate,
+                    "endDate": end_date,
+                    "months": agreement.months,
+                    "rate": agreement.rate,
+                    "info": agreement.info,
+                    "status": agreement.status,
+                    "invoice_interval": agreement.invoice_interval,
+                    # add other agreement fields as needed
+                },
+                "instrument": {
+                    "serial": instrument.serial,
+                    "instrumentId": instrument.instrumentId,
+                    "color" : instrument.color,
+                    "status" : instrument.status,
+                    # add other instrument fields
+                },
+                "model": {
+                    "model": model.model,
+                    "brand": model.brand,
+                    "keys": model.keys,
+                    "sb": model.sb,
+                    # add other model fields
+                },
+                "imageLink": image_link
+               
+            }
+            data.append(agreement_data)
+        except Rendipillid.DoesNotExist:
+            continue
+
+    return JsonResponse(data, safe=False)
 
 def get_user_from_token(access_token):
     try:

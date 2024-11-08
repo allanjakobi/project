@@ -136,6 +136,9 @@ class Agreements(models.Model):
     ], default='Created')
     invoice_interval = models.IntegerField(default=1)
     
+    class Meta:
+        db_table = 'agreements'
+    
     
     def __str__(self):
         return f"{self.agreementId} - {self.userId.firstName} {self.userId.lastName} - {self.instrumentId.modelId.brand} {self.instrumentId.modelId.model}"
