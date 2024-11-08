@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Button, Input, VStack, HStack, Text, SimpleGrid } from "@chakra-ui/react";
 
 const ProfileForm = () => {
+  
+  
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -18,53 +20,117 @@ const ProfileForm = () => {
   });
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const getAccessToken = () => {
+    const name = 'access_token=';
+    const decodedCookie = decodeURIComponent(document.cookie); // Decode the cookie
+    const cookieArr = decodedCookie.split(';'); // Split by ';' to get individual cookies
+    
+    // Loop through cookies to find the access_token
+    for (let i = 0; i < cookieArr.length; i++) {
+        let cookie = cookieArr[i].trim(); // Trim whitespace
+        // Check if this cookie starts with access_token=
+        if (cookie.indexOf(name) === 0) {
+            return cookie.substring(name.length, cookie.length); // Return the token value
+        }
+    }
+    return null; // Return null if token not found
+  };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
     try {
       // Get the CSRF token first
       const csrfToken = await getCSRFToken();
-  
-      const response = await fetch('/api/profile/', {
+      console.log("CSRF Token:", csrfToken);
+
+      const response = await fetch('http://localhost:8000/api/profile/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken, // Pass CSRF token in headers
+          'X-CSRFToken': csrfToken,
         },
         body: JSON.stringify(formData),
         credentials: 'include',
       });
-  
+      console.log("Profile update response:", response);
+
       if (response.ok) {
-        navigate('/dashboard'); // Redirect to dashboard on success
+        console.log("Profile updated successfully.");
+        navigate('/'); // Redirect to the main page on success
       } else {
+        console.error("Profile update failed with status:", response.status);
         const errorData = await response.json();
+        console.log("Error data:", errorData);
         setErrors(errorData); // Set validation errors
       }
     } catch (error) {
-      console.error('Error updating profile', error);
+      console.error('Error updating profile:', error);
     }
   };
 
   const getCSRFToken = async () => {
-    const response = await fetch('/api/csrf/', {
-      credentials: 'include',
-    });
-    const data = await response.json();
-    return data.csrfToken; // assuming backend returns {'csrfToken': '<token>'}
+    try {
+      const response = await fetch('http://localhost:8000/api/csrf/', { credentials: 'include' });
+      console.log("CSRF token response:", response);
+      
+      const data = await response.json();
+      console.log("CSRF token data:", data);
+      return data.csrfToken; // assuming backend returns {'csrfToken': '<token>'}
+    } catch (error) {
+      console.error('Error fetching CSRF token:', error);
+      return null;
+    }
   };
 
   // Fetch user data from backend
   useEffect(() => {
-    const fetchProfileData = async () => {
+    const testAuth = async () => {
+      const csrfToken = await getCSRFToken(); // Define or import getCSRFToken function if needed
+      const accessToken = localStorage.getItem('access_token'); // Adjust based on where you're storing the token
+
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/profile/', {
+        const response = await fetch('http://localhost:8000/api/test-auth/', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'X-CSRFToken': csrfToken,
+          },
           credentials: 'include',
         });
-        const data = await response.json();
 
-        if (data && typeof data === 'object') {
+        if (response.ok) {
+          console.log("Authenticated successfully.");
+        } else {
+          console.error("Failed AUUuthentication:", response.status);
+        }
+      } catch (error) {
+        console.error('Error during authentication check:', error);
+      }
+    };
+
+    testAuth();
+    const fetchProfileData = async () => {
+      const access_token = getAccessToken();
+      if (!access_token) {
+        console.error("No access token found");
+        return;
+      }
+      const csrfToken = getCSRFToken()
+    
+      try {
+        const response = await fetch('http://localhost:8000/api/profile/', {
+          method: 'GET',
+          headers: {
+            'X-CSRFToken': csrfToken,
+            //'Content-Type': 'application/json',
+            'Authorization': `Bearer ${access_token}`,
+          },
+          credentials: 'include',
+        });
+    
+        if (response.ok) {
+          const data = await response.json();
           setFormData((prevState) => ({
             ...prevState,
             firstName: data.firstName || '',
@@ -79,9 +145,11 @@ const ProfileForm = () => {
             phone: data.phone || '+372',
             language: data.language || 'Eesti',
           }));
+        } else {
+          console.error("Failed to fetch profile data:", response.status);
         }
       } catch (error) {
-        console.error('Error fetching profile data', error);
+        console.error('Error fetching profile data:', error);
       }
     };
 
@@ -90,6 +158,7 @@ const ProfileForm = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    console.log(`Changing ${name} to ${value}`);
     setFormData({ ...formData, [name]: value });
   };
 

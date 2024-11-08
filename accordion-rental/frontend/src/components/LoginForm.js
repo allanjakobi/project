@@ -61,19 +61,16 @@ const LoginForm = ({ setIsLoggedIn }) => {
       // Set the state to logged in, and redirect user based on response
       const data = await response.json();
       console.log("Login successful:", data);
-      console.log("Access Token (from cookies):", document.cookie
+      /* console.log("Access Token (from cookies):", document.cookie
         .split('; ')
         .find(row => row.startsWith('access_token'))
         ?.split('=')[1]);
       console.log("Refresh Token (from cookies):", document.cookie
         .split('; ')
         .find(row => row.startsWith('refresh_token'))
-        ?.split('=')[1]);
-
-
+        ?.split('=')[1]); */
 
       setIsLoggedIn(true);
-      console.log('Login successful:', data);
       navigate(data.redirect);
       
     } catch (error) {

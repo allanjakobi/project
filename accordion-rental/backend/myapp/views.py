@@ -1,8 +1,8 @@
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
-
+from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework import generics
 from .models import Agreements, Rates, Rendipillid, Users
 from .serializers import ModelSerializer, RendipillidSerializer
@@ -20,14 +20,20 @@ from django.db.models import Q
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
+from django.conf import settings
 from rest_framework import status
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie
 from datetime import datetime
 import json
+from rest_framework_simplejwt.tokens import AccessToken
+from django.contrib.auth.models import User
+import jwt
+from django.shortcuts import get_object_or_404
+import logging
 
-
+logger = logging.getLogger(__name__)
 
 class InvoiceList(ListView):
     model = Invoices
@@ -120,6 +126,11 @@ def register_user(request):
 def csrf(request):
     return JsonResponse({'csrfToken': get_token(request)})
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def test_auth_view(request):
+    return Response({"message": "Authenticated successfully"})
+
 ##@csrf_exempt  # Remove this after testing
 @api_view(['POST'])
 def login_user(request):
@@ -152,8 +163,6 @@ def login_user(request):
                 not user_profile.language
             )
             
-            print("access", access_token)
-            print("refresh", refresh_token)
             redirect_url = "/profile" if missing_data else "/"
 
             # Create the response object
@@ -186,10 +195,16 @@ def login_user(request):
         return JsonResponse({"error": "Incorrect username or password"}, status=400)
     
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated]) 
 def profile_view(request):
+    print("RUNNNNNNNNNNNNNNNNNNNNNNNING", request.user)
     user = request.user
-    user_profile = Users.objects.get(user=user)
     
+    try:
+        user_profile = Users.objects.get(user=user)
+    except Users.DoesNotExist:
+        return Response({"error": "Profile not found"}, status=404)
+    print("RUuxxxxxxxxxxxxxING")
     if request.method == 'GET':
         profile_data = {
             "firstName": user_profile.firstName,
@@ -204,7 +219,7 @@ def profile_view(request):
             "phone": user_profile.phone,
             "language": user_profile.language,
         }
-        return JsonResponse(profile_data)
+        return Response(profile_data)
 
     elif request.method == 'POST':
         # Update profile data
@@ -219,10 +234,9 @@ def profile_view(request):
         user_profile.apartment = request.data.get('apartment', user_profile.apartment)
         user_profile.phone = request.data.get('phone', user_profile.phone)
         user_profile.language = request.data.get('language', user_profile.language)
-        
 
         user_profile.save()
-        return JsonResponse({"success": "Profile updated successfully"})
+        return Response({"success": "Profile updated successfully"})
     
 @api_view(['POST'])
 def logout_user(request):
@@ -249,25 +263,33 @@ def check_login(request):
     if request.user.is_authenticated:
         return JsonResponse({"logged_in": True}, status=200)
     else:
+        print("logged_in: False")
         return JsonResponse({"logged_in": False}, status=401)
     
 @api_view(['POST'])
 @csrf_exempt  # Make sure to include CSRF token handling in frontend#        
 #@permission_classes([IsAuthenticated])  # Only allow authenticated users
 def create_agreement(request):
+    access_token = request.COOKIES.get('access_token')
+    username = get_user_from_token(access_token)
+    user = get_user_id_from_token(access_token)
+    
   
-    user = request.user
+    
     data = json.loads(request.body)
     authorization_header = request.headers.get('Authorization')
-    print("HEADER: ",request.headers)
+    
+
 
     # Extracting instrumentId and other necessary fields
     instrument_id = data.get('instrumentId')
     rental_period = data.get('months')
     additional_info = data.get('info')
-    price_level_id = data.get('rate')
+    rate = data.get('rate')
     invoice_interval = data.get('invoiceInterval')
-    print("QQ", user)
+    
+    
+ 
 
     # Check if instrument_id is provided
     if not instrument_id:
@@ -275,14 +297,21 @@ def create_agreement(request):
 
     try:
         # Fetch the instrument instance from the Rendipillid model
-        instrument = Rendipillid.objects.get(id=instrument_id)
+        instrument = Rendipillid.objects.get(instrumentId=instrument_id)
+        if rate:
+            if 0 <= rental_period < 4:
+                rate = round(rate * 2.1)  # 0-3 months
+            elif 4 <= rental_period < 12:
+                rate = round(rate * 1.4)  # 4-11 months
+            else:
+                rate = rate  # 12 months or greater
 
-        # Retrieve the rate based on price level
-        rate = Rates.objects.get(id=price_level_id).rate
+        user_instance = get_object_or_404(Users, user=user)  # Retrieve the actual Users instance
 
+        
         # Create a new agreement
         agreement = Agreements.objects.create(
-            userId=user,
+            userId=user_instance,
             instrumentId=instrument,  # Use the fetched instrument instance
             startDate=datetime.now(),
             months=rental_period,
@@ -296,8 +325,7 @@ def create_agreement(request):
             "message": "Agreement created successfully.",
             "agreement_id": agreement.agreementId,
             "instrument": {
-                "instrument_id": instrument.id,
-                "price_level": price_level_id,
+                "instrument_id": instrument.instrumentId,
                 "rate": rate
             },
             "rental_period": rental_period,
@@ -345,3 +373,36 @@ def calculate_reference_number(agreementId):
     reference_number = f"{base_number}{control_digit}"
 
     return int(reference_number)
+
+def get_user_from_token(access_token):
+    try:
+        # Decode the token
+        token = AccessToken(access_token)
+
+        # Get the user ID from the token payload
+        user_id = token['user_id']  # This assumes 'user_id' is the identifier key in the payload
+
+        # Retrieve the user instance
+        user = User.objects.get(id=user_id)
+        return user
+
+    except Exception as e:  # General exception for any token/user retrieval issues
+        # Handle token or user retrieval errors
+        return JsonResponse({"error": "Invalid or expired token."}, status=401)
+
+def get_user_id_from_token(token):
+    try:
+        # Decode the token using Simple JWT's UntypedToken to validate it
+        UntypedToken(token)
+        decoded_payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        user_id = decoded_payload.get('user_id')
+        
+        if user_id:
+            return user_id
+        else:
+            return JsonResponse({"error": "User ID not found in token"}, status=400)
+    
+    except TokenError:
+        return JsonResponse({"error": "Invalid token"}, status=401)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

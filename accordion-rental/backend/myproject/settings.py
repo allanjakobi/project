@@ -45,7 +45,7 @@ CSRF_TRUSTED_ORIGINS = [
 # Ensure the CSRF cookie has the correct attributes for cross-site requests
 CSRF_COOKIE_SAMESITE = 'None'
 CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False
 # i changed to true to get 
 
 AUTHENTICATION_BACKENDS = [
@@ -80,7 +80,9 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # other authentication classes if needed
     ],
+    
 }
 
 SIMPLE_JWT = {

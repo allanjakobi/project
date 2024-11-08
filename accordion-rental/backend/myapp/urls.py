@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
-from .views import AvailableInstrumentsViewSet, RendipillidListCreate, logout_user, register_user, login_user, profile_view
+from .views import AvailableInstrumentsViewSet, RendipillidListCreate, logout_user, register_user, login_user, profile_view, test_auth_view
 from django.contrib import admin
 from .views import admin_view, get_csrf_token, csrf
 
@@ -20,6 +20,7 @@ urlpatterns = [
     
 
     # Other views
+    path('api/test-auth/', test_auth_view, name='test_auth_view'),
     path('models/', views.ModelList.as_view(), name='model-list'),
     path('rendipillid/', views.RendipillidList.as_view(), name='rendipillid-list'),
     path('api/get_csrf_token/', get_csrf_token, name='get_csrf_token'),
@@ -28,8 +29,6 @@ urlpatterns = [
     path('api/logout/', logout_user, name='logout_user'),
     path('api/agreements/', views.create_agreement, name='create_agreement'),
     path('api/rates/<int:price_level_id>/', views.get_rate, name='get_rate'),
-
-
 
     path('api/login/', login_user, name='login_user'),
     path('api/check_login/', views.check_login, name='check_login'),
