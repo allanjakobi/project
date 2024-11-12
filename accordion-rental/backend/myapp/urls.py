@@ -4,6 +4,8 @@ from . import views
 from .views import AvailableInstrumentsViewSet, RendipillidListCreate, logout_user, register_user, login_user, profile_view, test_auth_view, contracts_view
 from django.contrib import admin
 from .views import admin_view, get_csrf_token, csrf
+from django.conf import settings
+from django.conf.urls.static import static
 
 
 
@@ -29,8 +31,8 @@ urlpatterns = [
     path('api/logout/', logout_user, name='logout_user'),
     path('api/agreements/', views.create_agreement, name='create_agreement'),
     path('api/contracts/', views.contracts_view, name='contracts_view'),
-    path('api/rates/<int:price_level_id>/', views.get_rate, name='get_rate'),
-
+    path('api/invoices/', views.invoices_view, name='invoices_view'),
+    path('api/invoices/download/<int:invoice_id>/', views.download_invoice, name='download_invoice'),    path('api/rates/<int:price_level_id>/', views.get_rate, name='get_rate'),
     path('api/login/', login_user, name='login_user'),
     path('api/check_login/', views.check_login, name='check_login'),
     path('admin-view/', admin_view, name='admin_view'),
@@ -44,4 +46,4 @@ urlpatterns = [
 
     # Include the router URLs
     path('api/', include(router.urls)),  # Use this for the API endpoint
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

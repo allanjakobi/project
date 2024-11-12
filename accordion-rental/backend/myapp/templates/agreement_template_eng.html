@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rental Agreement</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        h1 { color: #333; }
+        p, ul { line-height: 1.6; }
+        .section { margin-top: 20px; }
+        .appendix { margin-top: 30px; padding: 15px; border-top: 1px solid #333; }
+        .instrument-details { margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<h1>RENTAL AGREEMENT No. {{ agreement.agreementId }}</h1>
+
+<div class="section">
+    <h2>1. DEFINITIONS</h2>
+    <p><strong>Lessor</strong> – Allan Jakobi</p>
+    <p><strong>Lessee</strong> - {{ user.firstName }} {{ user.lastName }}</p>
+    <p><strong>Party</strong> - Either the Lessor or the Lessee</p>
+    <p><strong>Agreement</strong> - This Rental Agreement between the Parties, including Annexes 1 and 2</p>
+    <p><strong>Asset</strong> - The musical instrument or other asset rented under the Agreement, as listed in Annex 1</p>
+</div>
+
+<div class="section">
+    <h2>2. LESSEE'S CONFIRMATIONS</h2>
+    <p>The Lessee confirms that there are no circumstances preventing the fulfillment of obligations under this Agreement, and that they are familiar with the rented Asset and its condition.</p>
+</div>
+
+<div class="section">
+    <h2>3. TERM OF THE AGREEMENT</h2>
+    <p>This Agreement is valid for a period of {{ agreement.period }} months, beginning on {{ agreement.startDate }} and ending on {{ agreement.endDate }}.</p>
+</div>
+
+<div class="section">
+    <h2>4. RENTAL FEE AND FINANCIAL OBLIGATIONS</h2>
+    <p><strong>Rental Fee:</strong> {{ rate }} € per month</p>
+    <p><strong>Payment Due Date:</strong> Payment is due monthly on the {{ startDate + 7 }} of each month, starting from the start date.</p>
+    <p><strong>Late Fee:</strong> A penalty of 0.5% per day will be applied to overdue amounts until full payment is made.</p>
+</div>
+
+<div class="section">
+    <h2>5. RIGHTS AND OBLIGATIONS OF THE LESSEE</h2>
+    <p>The Lessee agrees to:</p>
+    <ul>
+        <li>Use the Asset with due care and in accordance with its intended purpose;</li>
+        <li>Ensure the Asset is protected from damage, theft, or loss;</li>
+        <li>Notify the Lessor immediately of any damage or issues affecting the Asset;</li>
+        <li>Return the Asset to the Lessor in the same condition, minus normal wear and tear, at the end of the rental period.</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>6. RIGHTS AND OBLIGATIONS OF THE LESSOR</h2>
+    <p>The Lessor agrees to:</p>
+    <ul>
+        <li>Provide the Lessee with the Asset in good working condition;</li>
+        <li>Be available to address any reasonable questions or concerns regarding the use of the Asset.</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>7. LIABILITY FOR DAMAGE</h2>
+    <p>The Lessee is liable for any damage caused to the Asset due to negligence or misuse. In the event of theft or total loss, the Lessee agrees to compensate the Lessor for the replacement cost of the Asset.</p>
+</div>
+
+<div class="section">
+    <h2>8. TERMINATION OF THE AGREEMENT</h2>
+    <p>This Agreement may be terminated by mutual agreement between the Parties, by the expiration of the rental period, or by the return of the Asset to the Lessor in satisfactory condition.</p>
+</div>
+
+<div class="section">
+    <h2>9. OTHER TERMS</h2>
+    <p>Both Parties agree to comply with the terms of this Agreement and any attached Appendices. Amendments to this Agreement may only be made in writing and signed by both Parties.</p>
+</div>
+
+<div class="section">
+    <h2>Signatures</h2>
+    <p><strong>Lessor:</strong> ___________________________ Date: ______________</p>
+    <p><strong>Lessee:</strong> ___________________________ Date: ______________</p>
+</div>
+
+<div class="appendix">
+    <h2>APPENDIX 1: ASSET DETAILS</h2>
+    <div class="instrument-details">
+        <p><strong>Instrument Model:</strong> {{ instrument.model.brand }} {{ instrument.model.model }}</p>
+        <p><strong>Instrument Serial Number:</strong> {{ instrument.serial }}</p>
+        <p><strong>Instrument Specifications:</strong></p>
+        <ul>
+            <li><strong>Color:</strong> {{ instrument.color }}</li>
+            <li><strong>Keyboard:</strong> {{ instrument.keyboard }}</li>
+            <li><strong>Keys:</strong> {{ instrument.keys }}</li>
+            <li><strong>Reeds:</strong> {{ instrument.reeds }}</li>
+            <li><strong>Dimensions:</strong> {{ instrument.dimensions }}</li>
+            <li><strong>Price Level:</strong> {{ instrument.price_level }} €</li>
+        </ul>
+    </div>
+</div>
+
+<div class="appendix">
+    <h2>APPENDIX 2: CARE AND HANDLING INSTRUCTIONS</h2>
+    <p>The Lessee agrees to adhere to the following guidelines to maintain the Asset in optimal condition:</p>
+    <ul>
+        <li>Store the instrument in a dry, stable environment away from direct sunlight and extreme temperatures.</li>
+        <li>Handle the instrument with care, avoiding sharp impacts or any form of rough treatment.</li>
+        <li>Clean the instrument using a soft, lint-free cloth; avoid using water or chemical cleaning agents.</li>
+        <li>Only make minor, non-invasive adjustments; any repairs or significant adjustments should be done by a professional.</li>
+        <li>If transporting the instrument, ensure it is securely fastened in a padded case to prevent damage.</li>
+    </ul>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .invoice-container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .header, .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header {
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .company-logo {
+            max-width: 150px;
+            height: auto;
+        }
+        .client-info, .invoice-info {
+            margin: 0;
+            padding: 5px 0;
+        }
+        .client-info h3, .invoice-info h3 {
+            margin: 0;
+            color: #007bff;
+        }
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .invoice-table th, .invoice-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .invoice-table th {
+            background-color: #007bff;
+            color: white;
+        }
+        .totals-row {
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 20px;
+            border-top: 2px solid #007bff;
+            padding-top: 10px;
+            font-size: 12px;
+            color: #666;
+            margin-top: 40px;
+        }
+        .footer div {
+            width: 30%;
+            text-align: left;
+            vertical-align: top;
+            
+        }
+        .footer div h4 {
+            margin: 0;
+            color: #333;
+            font-weight: bold;
+            vertical-align: top;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="invoice-container">
+    <!-- Header Section -->
+    <div class="header">
+        <div class="client-info">
+            <h3>Accordion rent</h3>
+            <p>Name: {{ user.firstName }} {{ user.lastName }}</p>
+            <p>Address: {{ user.street }} {{ user.house }} {{ user.apartment }} {{ user.settelment }} {{ user.municipality }} {{ user.province }}, {{ user.country }}</p>
+        </div>
+        <div class="company-logo">
+            <img src="{{ logoLink }}" alt="Company Logo"> <!-- Display the logo -->
+
+        </div>
+    </div>
+
+    <!-- Invoice Information Section -->
+    <div class="invoice-info">
+        <p><strong>Invoice nr. </strong> {{ invoice.id }}</p>
+        <p><strong>Date:</strong> {{ invoice.date }}</p>
+        <p><strong>Due Date:</strong> 7 days</p>
+        <p><strong>Reference #:</strong> {{ agreement.referenceNr }}</p>
+    </div>
+
+    <!-- Instrument Image -->
+    <div class="instrument-image">
+        <img src="{{ imageLink }}" alt="" style="max-width: 100%; margin: 20px 0;">
+    </div>
+
+    <!-- Invoice Table -->
+    <table class="invoice-table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Amount</th>
+                <th>Rate</th>
+                <th>Sum</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Instrument Rental, Reference: {{ agreement.referenceNr }}</td>
+                <td>{{ invoice.quantity }}</td>
+                <td>{{ agreement.rate }}</td>
+                <td>{{ invoice.total }}</td>
+            </tr>
+            <tr class="totals-row">
+                <td colspan="3" style="text-align: right;"><strong>Total:</strong></td>
+                <td><strong>{{ invoice.total }}</strong></td>
+            </tr>
+            <tr>
+                <td colspan="4" style="font-size: 12px;">Additional Info: {{ agreement.info }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <p style="font-size: 10px;">The interest on late payments will be calculated from the payment due date at a rate of 0.05% per day.</p>
+
+
+    <!-- Footer Section -->
+    <div class="footer">
+        <div>
+            <h4>Company Info</h4>
+            <p>Accordion Rental Ltd</p>
+            <p>RegNr: xxxxxxx</p>
+            <p>Address1: XXX</p>
+            <p>Address2: XXX</p>
+        </div>
+        <div>
+            <h4>Payment Details</h4>
+            <p>Bank1 xxxxxxxxxx, IBAN XXXXXXXX</p>
+            <p>Bank1 xxxxxxxxxx, IBAN XXXXXXXX</p>
+        </div>
+        <div>
+            <h4>Contact</h4>
+            <p>Phone: +XXXXXXXX</p>
+            <p>Email: info@akordion.ee</p>
+            
+            <p>https://rent.address.com/</p>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+

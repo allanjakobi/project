@@ -11,7 +11,6 @@ const Contracts = () => {
       });
       if (response.ok) {
         const data = await response.json();
-        console.log("LEPINGUD: ", data)
         setContracts(data);
       }
     };
@@ -41,7 +40,7 @@ const Contracts = () => {
                   <p>Refernce nr: {contract.agreement.referenceNr}</p>
                   <p>Rate: ${contract.agreement.rate} per month</p>
                   <p>Start Date: {contract.agreement.startDate}</p>
-                  <p>Instrument returned before: {contract.agreement.endDate}</p>|
+                  <p>Returned before: {contract.agreement.endDate}</p>|
                 </Td>
                 <Td>
                   {/* Display Model details */}

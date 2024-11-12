@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <title>Rendileping</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        h1 { color: #333; }
+        p { line-height: 1.6; }
+        .section { margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<h1>RENDILEPING nr {{ agreement.agreementId }}</h1>
+
+<div class="section">
+    <h2>1. DEFINITSIOONID</h2>
+    <p><strong>Rendileandja</strong> – Allan Jakobi</p>
+    <p><strong>Rentnik</strong> - {{ user.firstName }} {{ user.lastName }}</p>
+    <p><strong>Pool</strong> - Rendileandja või Rentnik</p>
+    <p><strong>Leping</strong> - Poolte vahel sõlmitud Varade rendileping koos selle Lisadega 1 ja 2</p>
+    <p><strong>Vara</strong> - Lepingu alusel renditav muusikainstrument või muu vara, mille loetelu on fikseeritud Lepingu Lisas 1</p>
+</div>
+
+<div class="section">
+    <h2>2. RENTNIKU KINNITUSED</h2>
+    <p>Rentnik kinnitab, et puuduvad asjaolud, mis takistaksid kohustuste täitmist ja et ta on renditava varaga tutvunud.</p>
+    <!-- Add more sections similarly... -->
+</div>
+
+<div class="section">
+    <h2>4. RENDITASU JA RAHALISED KOHUSTISED</h2>
+    <p><strong>Renditasu:</strong> {{ rate }} € kuus</p>
+    <p><strong>Maksete tähtajad:</strong> Iga kuu {{ startDate + 7 }}</p>
+    <p>Viivis: 0,5% päevas tähtaegselt tasumata summalt</p>
+</div>
+
+<div class="section">
+    <h2>5. RENTNIKU ÕIGUSED JA KOHUSTUSED</h2>
+    <p>Rentnik kohustub kasutama vara heaperemehelikult ja järgima renditingimusi.</p>
+</div>
+
+<div class="section">
+    <h2>8. LEPINGU LÕPPEMINE</h2>
+    <p>Leping lõpeb tähtaja saabumisel või vara tagastamisel.</p>
+</div>
+
+</body>
+</html>

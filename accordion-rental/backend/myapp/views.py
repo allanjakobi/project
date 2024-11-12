@@ -4,14 +4,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework import generics
-from .models import Agreements, Rates, Rendipillid, Users
+from .models import Agreements, Rates, Rendipillid, Users, Model, Invoices
 from .serializers import ModelSerializer, RendipillidSerializer
 from django.shortcuts import render
 from .forms import RendipillidForm
-from .models import Rendipillid, Model
+
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
-from .models import Invoices
+
 from rest_framework import viewsets
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
@@ -22,7 +22,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.conf import settings
 from rest_framework import status
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie
 from datetime import datetime
@@ -33,6 +33,9 @@ import jwt
 from django.shortcuts import get_object_or_404
 import logging
 from dateutil.relativedelta import relativedelta
+from weasyprint import HTML
+from django.template.loader import render_to_string
+
 
 logger = logging.getLogger(__name__)
 
@@ -199,7 +202,6 @@ def login_user(request):
 def profile_view(request):
     access_token = request.COOKIES.get('access_token')
     
-    # Extract user information from token
     if access_token:
         user_id = get_user_id_from_token(access_token)
         username = get_user_from_token(access_token)
@@ -209,11 +211,22 @@ def profile_view(request):
     else:
         return Response({"error": "Access token required"}, status=401)
 
+    try:
+        # Fetch the auth_user entry based on user_id
+        auth_user = User.objects.get(id=user_id)
+        auth_user_email = auth_user.email
+    except User.DoesNotExist:
+        return Response({"error": "User not found"}, status=404)
+    
+    print("zzz", auth_user_email)
+
     # Try to fetch or create a user profile based on user_id
-    user_profile, created = Users.objects.get_or_create(user_id=user_id, defaults={'user_id': user_id})
+    user_profile, created = Users.objects.get_or_create(
+        user_id=user_id,
+        defaults={'user_id': user_id, 'email': auth_user_email}  # set email by default if profile is created
+    )
 
     if request.method == 'GET':
-        # Return profile data
         profile_data = {
             "firstName": user_profile.firstName,
             "lastName": user_profile.lastName,
@@ -226,13 +239,16 @@ def profile_view(request):
             "apartment": user_profile.apartment,
             "phone": user_profile.phone,
             "language": user_profile.language,
+            "email2": auth_user_email,
+            "email": user_profile.email,
         }
         return Response(profile_data)
 
     elif request.method == 'POST':
-        # Update profile data
+        # Update fields with request data if provided
         user_profile.firstName = request.data.get('firstName', user_profile.firstName)
         user_profile.lastName = request.data.get('lastName', user_profile.lastName)
+        user_profile.email = request.data.get('email', user_profile.email)
         user_profile.country = request.data.get('country', user_profile.country)
         user_profile.province = request.data.get('province', user_profile.province)
         user_profile.municipality = request.data.get('municipality', user_profile.municipality)
@@ -242,11 +258,12 @@ def profile_view(request):
         user_profile.apartment = request.data.get('apartment', user_profile.apartment)
         user_profile.phone = request.data.get('phone', user_profile.phone)
         user_profile.language = request.data.get('language', user_profile.language)
-
+        
         user_profile.save()
         return Response({"success": "Profile updated successfully"})
 
     return Response({"error": "Invalid request method"}, status=400)
+
     
 @api_view(['POST'])
 def logout_user(request):
@@ -283,9 +300,6 @@ def create_agreement(request):
     access_token = request.COOKIES.get('access_token')
     username = get_user_from_token(access_token)
     user = get_user_id_from_token(access_token)
-    
-  
-    
     data = json.loads(request.body)
     authorization_header = request.headers.get('Authorization')
     
@@ -446,6 +460,119 @@ def contracts_view(request):
             continue
 
     return JsonResponse(data, safe=False)
+
+@api_view(['GET'])
+def invoices_view(request):
+    access_token = request.COOKIES.get('access_token')
+    user_id = get_user_id_from_token(access_token)
+    print("UID: ", user_id)
+   
+    try:
+        user_profile = Users.objects.get(user_id=user_id)
+        profileId = user_profile.userId  # Assuming `userId` is the primary key in Users
+    except Users.DoesNotExist:
+        return JsonResponse({"error": "User profile not found"}, status=404)
+   
+    agreements = Agreements.objects.filter(userId=profileId)
+    data = []
+    
+    for agreement in agreements:
+        try:
+            # Prepare agreement data
+            agreement_data = {
+                "agreement": {
+                    "agreementId": agreement.agreementId,
+                    "referenceNr": agreement.referenceNr,
+                    "instrumentID": agreement.instrumentId_id,
+                    "startDate": agreement.startDate,
+                    "months": agreement.months,
+                    "rate": agreement.rate,
+                    "status": agreement.status,
+                    "invoice_interval": agreement.invoice_interval,
+                    # add other agreement fields as needed
+                },
+                "user": {
+                    "firstName": user_profile.firstName,
+                    "lastName": user_profile.lastName,
+                    "street": user_profile.street,
+                    "house": user_profile.house,
+                    "apartment": user_profile.apartment,
+                    "country": user_profile.country,
+                    "province": user_profile.province,
+                    "municipality": user_profile.municipality,
+                    "settlement": user_profile.settlement,
+                    "municipality": user_profile.municipality,
+                },
+                "invoices": []
+            }
+            
+            # Retrieve and add invoices related to the agreement
+            invoices = Invoices.objects.filter(agreement=agreement.agreementId)
+            for invoice in invoices:
+                invoice_data = {
+                    "id": invoice.id,
+                    "date": invoice.date,
+                    "price": invoice.price,
+                    "quantity": invoice.quantity,
+                    "status": invoice.status,
+                }
+                agreement_data["invoices"].append(invoice_data)
+                
+            data.append(agreement_data)
+
+        except Rendipillid.DoesNotExist:
+            continue
+
+    return JsonResponse(data, safe=False)
+
+
+@api_view(['GET'])
+def download_invoice(request, invoice_id):
+    # Fetch the invoice, related agreement, and user data
+    invoice = get_object_or_404(Invoices, pk=invoice_id)
+    agreement = invoice.agreement
+    user_profile = agreement.userId  # Assuming agreement.userId is a foreign key to Users
+
+    invoice_data = {
+        "invoice": {
+            "id": invoice.id,
+            "date": invoice.date,
+            "price": invoice.price,
+            "quantity": invoice.quantity,
+            "status": invoice.status,
+            "total": invoice.price * invoice.quantity
+        },
+        "user": {     
+            "firstName": user_profile.firstName,
+            "lastName": user_profile.lastName,
+            "street": user_profile.street,
+            "house": user_profile.house,
+            "apartment": user_profile.apartment,
+            "country": user_profile.country,
+            "province": user_profile.province,
+            "municipality": user_profile.municipality,
+            "settlement": user_profile.settlement,
+            "municipality": user_profile.municipality,
+        },
+        "agreement": {
+            "referenceNr": agreement.referenceNr,
+            "startDate": agreement.startDate,
+            "months": agreement.months,
+            "rate": agreement.rate,
+            "status": agreement.status,
+            "invoice_interval": agreement.invoice_interval,
+        },
+         "logoLink": '/media/logo.jpg'
+    }
+
+    # Render HTML template
+    html_content = render_to_string('invoice_template.html', invoice_data)
+    pdf_file = HTML(string=html_content).write_pdf()
+
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="Invoice_{invoice.id}.pdf"'
+    return response
+
 
 def get_user_from_token(access_token):
     try:

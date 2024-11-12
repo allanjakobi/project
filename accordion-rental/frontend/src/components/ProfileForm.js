@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Input, VStack, HStack, Text, SimpleGrid } from "@chakra-ui/react";
+import { Box, Button, Input, VStack, HStack, Select, Text, SimpleGrid } from "@chakra-ui/react";
 
 const ProfileForm = () => {
   
@@ -8,6 +8,7 @@ const ProfileForm = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
+    email: '',
     country: 'Estonia',
     province: '',
     municipality: '',
@@ -146,6 +147,7 @@ const ProfileForm = () => {
             ...prevState,
             firstName: data.firstName || '',
             lastName: data.lastName || '',
+            email: data.email || data.email2,
             country: data.country || 'Estonia',
             province: data.province || '',
             municipality: data.municipality || '',
@@ -279,13 +281,19 @@ const ProfileForm = () => {
           </SimpleGrid>
 
           <Input
-            placeholder="Language"
-            name="language"
-            value={formData.language}
-            onChange={handleInputChange}
-            bg="white"
-            _placeholder={{ color: "gray.500" }}
-          />
+              placeholder="Email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              bg="white"
+              _placeholder={{ color: "gray.500" }}
+              
+            />
+
+          <Select placeholder="Language" name="language" value={formData.language} onChange={handleInputChange} bg="white" isRequired>
+            <option value="Eesti">Eesti</option>
+            <option value="English">English</option>
+          </Select>
 
           <Button colorScheme="teal" w="full" size="lg" type="submit">
             Save Profile

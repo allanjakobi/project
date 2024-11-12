@@ -59,7 +59,7 @@ class Rendipillid(models.Model):
     serial = models.CharField(max_length=64)
     info_est = models.TextField()
     info_eng = models.TextField()
-    status = models.CharField(max_length=64, default='Available')
+    status = models.CharField(max_length=64, default='Available') #Available, Reserved, AgreementInProgress, Rented, Sold, OutOfService, LostOrStolen, 
     price_level = models.ForeignKey(Rates, on_delete=models.CASCADE)
 
     class Meta:

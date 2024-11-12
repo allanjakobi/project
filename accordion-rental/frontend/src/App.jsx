@@ -11,7 +11,7 @@ import Profile from './components/ProfileForm';
 import ProtectedRoute from './components/ProtectedRoute'; // Import the ProtectedRoute
 import RentalForm from './components/RentalForm';
 import Contracts from './components/contracts';
-
+import Invoices from './components/invoices';
 
 
 function App() {
@@ -45,6 +45,14 @@ function App() {
           element={
             <ProtectedRoute isLoggedIn={isLoggedIn}>
               <Contracts />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/invoices" 
+          element={
+            <ProtectedRoute isLoggedIn={isLoggedIn}>
+              <Invoices />
             </ProtectedRoute>
           } 
         />
