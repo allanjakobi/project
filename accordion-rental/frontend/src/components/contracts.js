@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Text, Table, Thead, Tbody, Tr, Th, Td, Image } from '@chakra-ui/react';
+import { Box, Text, Table, Thead, Tbody, Tr, Th, Td, Image, Button } from '@chakra-ui/react';
 
 const Contracts = () => {
   const [contracts, setContracts] = useState([]);
@@ -16,6 +16,23 @@ const Contracts = () => {
     };
     fetchContracts();
   }, []);
+
+  // Function to handle contract PDF download
+  const handleDownload = async (contractId) => {
+    const response = await fetch(`http://localhost:8000/api/contracts/download/${contractId}/`, {
+      credentials: 'include',
+    });
+    console.log("response: ", response)
+    if (response.ok) {
+      const blob = await response.blob();
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `Contract_${contractId}.pdf`;
+      link.click();
+    } else {
+      console.error('Error downloading the contract.');
+    }
+  };
 
   return (
     <Box padding="4">
@@ -34,25 +51,21 @@ const Contracts = () => {
             <Tbody>
               <Tr>
                 <Td>
-                  {/* Display Agreement details */}
-                  
                   <p>Contract : {contract.agreement.status}</p>
-                  <p>Refernce nr: {contract.agreement.referenceNr}</p>
+                  <p>Reference nr: {contract.agreement.referenceNr}</p>
                   <p>Rate: ${contract.agreement.rate} per month</p>
                   <p>Start Date: {contract.agreement.startDate}</p>
-                  <p>Returned before: {contract.agreement.endDate}</p>|
+                  <p>Returned before: {contract.agreement.endDate}</p>
                 </Td>
                 <Td>
-                  {/* Display Model details */}
                   <p>Brand: {contract.model.brand}</p>
                   <p>Model: {contract.model.model}</p>
                   <p>{contract.model.keys} keys</p>
                   <p>{contract.model.sb} basses</p>
                 </Td>
                 <Td>
-                  {/* Display Indstrument details */}
                   <p>Serial: {contract.instrument.serial}</p>
-                  <p>instrumentId: {contract.instrument.instrumentId}</p>
+                  <p>InstrumentId: {contract.instrument.instrumentId}</p>
                   <p>Status: {contract.instrument.status}</p>
                   <p>Color: {contract.instrument.color}</p>
                 </Td>
@@ -68,6 +81,13 @@ const Contracts = () => {
               </Tr>
             </Tbody>
           </Table>
+          <Button
+            mt={4}
+            colorScheme="blue"
+            onClick={() => handleDownload(contract.agreement.agreementId)}
+          >
+            Download Contract
+          </Button>
         </Box>
       ))}
     </Box>

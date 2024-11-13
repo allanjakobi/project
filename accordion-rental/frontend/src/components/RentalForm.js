@@ -126,6 +126,7 @@ const RentalForm = ({ userId }) => {
         invoiceInterval: invoiceInterval, // Include invoice interval in the request
     };
 
+
     try {
       const accessToken = getTokenFromCookie();
       const csrfToken = getCSRFToken();  // Get the token from cookies
@@ -154,7 +155,7 @@ const RentalForm = ({ userId }) => {
                 duration: 4000,
                 isClosable: true,
             });
-            navigate('/profile'); // Redirect after successful submission
+            navigate('/contracts'); // Redirect after successful submission
         } else {
             console.error("Error details:", await response.text()); // Log detailed error message
             toast({

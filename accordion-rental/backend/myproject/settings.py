@@ -1,5 +1,9 @@
 from pathlib import Path
 from datetime import timedelta
+import smtplib, ssl
+#import certifi
+
+
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -62,6 +66,7 @@ CORS_ALLOWED_ORIGINS = [
     
 ]
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True
 
 # This ensures the session cookie also follows the same rules (if applicable)
 SESSION_COOKIE_SAMESITE = 'Lax'
@@ -155,3 +160,19 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.zone.eu'  # Täpsusta vastavalt oma teenusepakkujale
+EMAIL_PORT = 587  # STARTTLS jaoks (või 465 SSL/TLS jaoks)
+EMAIL_USE_TLS = True  # STARTTLS kasutamiseks
+EMAIL_USE_SSL = False  # Kui kasutad SSL/TLS, pane väärtuseks True ja eemalda TLS
+EMAIL_HOST_USER = 'info@akordion.ee'
+EMAIL_HOST_PASSWORD = 'ogrmactpyqsgvqks'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+#EMAIL_SSL_CERTFILE = certifi.where()
+
+
+""" context = ssl.create_default_context()
+context.check_hostname = False
+context.verify_mode = ssl.CERT_NONE """

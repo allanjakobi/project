@@ -5,7 +5,8 @@
     <title>Rental Agreement</title>
     <style>
         body { font-family: Arial, sans-serif; }
-        h1 { color: #333; }
+        h1 { font-size: 20px; color: #333; }
+        h2 { font-size: 14px; color: #333; }
         p, ul { line-height: 1.6; }
         .section { margin-top: 20px; }
         .appendix { margin-top: 30px; padding: 15px; border-top: 1px solid #333; }
@@ -14,12 +15,12 @@
 </head>
 <body>
 
-<h1>RENTAL AGREEMENT No. {{ agreement.agreementId }}</h1>
+<h1>RENTAL AGREEMENT No. {{ agreement.agreementId }}</h2>
 
 <div class="section">
     <h2>1. DEFINITIONS</h2>
-    <p><strong>Lessor</strong> – Allan Jakobi</p>
-    <p><strong>Lessee</strong> - {{ user.firstName }} {{ user.lastName }}</p>
+    <p><strong>Lessor</strong> – Lessor</p>
+    <p><strong>Lessee</strong> - {{ user_profile.firstName }} {{ user_profile.lastName }}</p>
     <p><strong>Party</strong> - Either the Lessor or the Lessee</p>
     <p><strong>Agreement</strong> - This Rental Agreement between the Parties, including Annexes 1 and 2</p>
     <p><strong>Asset</strong> - The musical instrument or other asset rented under the Agreement, as listed in Annex 1</p>
@@ -28,18 +29,21 @@
 <div class="section">
     <h2>2. LESSEE'S CONFIRMATIONS</h2>
     <p>The Lessee confirms that there are no circumstances preventing the fulfillment of obligations under this Agreement, and that they are familiar with the rented Asset and its condition.</p>
+    <p>Lessee incurs a responsibility to observe the Assets Operation and use instructions (Appendix 2 of the Contract)</p>
 </div>
 
 <div class="section">
     <h2>3. TERM OF THE AGREEMENT</h2>
-    <p>This Agreement is valid for a period of {{ agreement.period }} months, beginning on {{ agreement.startDate }} and ending on {{ agreement.endDate }}.</p>
+    <p>This Agreement is valid for a period of {{ agreement.months }} months, beginning on {{ agreement.startDate }}.</p>
+    <p>This Agreement will be considered  "ended" after Asset has been flly delivered to Lessor.</p>
 </div>
 
 <div class="section">
     <h2>4. RENTAL FEE AND FINANCIAL OBLIGATIONS</h2>
     <p><strong>Rental Fee:</strong> {{ rate }} € per month</p>
-    <p><strong>Payment Due Date:</strong> Payment is due monthly on the {{ startDate + 7 }} of each month, starting from the start date.</p>
-    <p><strong>Late Fee:</strong> A penalty of 0.5% per day will be applied to overdue amounts until full payment is made.</p>
+    <p><strong>Payments Due Dates:</strong> </p>
+    <p>Payments are due monthly on the {{ date1 }}, {{ date2 }}, {{ date3 }}...  starting from the first date.</p>
+    <p><strong>Late Fee:</strong> A penalty of 0.5% per day will be applied to overdue amounts until full payment is made. The lessee is obliged to reimburse the expenses arising from enforcing.</p>
 </div>
 
 <div class="section">
@@ -51,6 +55,7 @@
         <li>Notify the Lessor immediately of any damage or issues affecting the Asset;</li>
         <li>Return the Asset to the Lessor in the same condition, minus normal wear and tear, at the end of the rental period.</li>
     </ul>
+    <p>The Assetets's returning has to be fully implemented by Lessee</p>
 </div>
 
 <div class="section">
@@ -70,6 +75,7 @@
 <div class="section">
     <h2>8. TERMINATION OF THE AGREEMENT</h2>
     <p>This Agreement may be terminated by mutual agreement between the Parties, by the expiration of the rental period, or by the return of the Asset to the Lessor in satisfactory condition.</p>
+    <p>Early termination and return is possible paying additional 2 months fee (Section 4).</p>
 </div>
 
 <div class="section">
@@ -78,25 +84,48 @@
 </div>
 
 <div class="section">
-    <h2>Signatures</h2>
-    <p><strong>Lessor:</strong> ___________________________ Date: ______________</p>
-    <p><strong>Lessee:</strong> ___________________________ Date: ______________</p>
+    <h2>10. PARTIES</h2>
+    <p>Lessor</p>
+
+    <ul>
+        <li>Name: NAME</li>
+        <li>RegNr: RegNr</li>
+        <li>Address: Address</li>
+        <li>e-mail: Email</li>
+        <li>Phone: XXXXXXXX</li>
+        <li>Bank Account: XXXX</li>        
+    </ul>
+
+    <p>Lessee</p>
+    <ul>
+        <li>Name: {{ user_profile.firstName }} {{ user_profile.lastName }}</li>
+        <li>Address: {{ user_profile.street }} {{ user_profile.house }} {{ user_profile.apartment }} {{ user_profile.settelment }} {{ user_profile.municipality }} {{ user_profile.province }}, {{ user_profile.country }}</li>
+        <li>Phone: {{ user_profile.phone }}</li>
+        <li>e-mail: {{ user_profile.email }}</li>
+        <li>Teacher: {{ user_profile.teacher }}</li>
+        <li>School: {{ user_profile.school }}</li>   
+    </ul>
 </div>
 
 <div class="appendix">
     <h2>APPENDIX 1: ASSET DETAILS</h2>
     <div class="instrument-details">
-        <p><strong>Instrument Model:</strong> {{ instrument.model.brand }} {{ instrument.model.model }}</p>
+        <p><strong>Instrument Model:</strong> {{ model.brand }} {{ model.model }}</p>
         <p><strong>Instrument Serial Number:</strong> {{ instrument.serial }}</p>
         <p><strong>Instrument Specifications:</strong></p>
         <ul>
             <li><strong>Color:</strong> {{ instrument.color }}</li>
-            <li><strong>Keyboard:</strong> {{ instrument.keyboard }}</li>
-            <li><strong>Keys:</strong> {{ instrument.keys }}</li>
-            <li><strong>Reeds:</strong> {{ instrument.reeds }}</li>
-            <li><strong>Dimensions:</strong> {{ instrument.dimensions }}</li>
-            <li><strong>Price Level:</strong> {{ instrument.price_level }} €</li>
+            <li><strong>Keys:</strong> {{ model.keys }}</li>
+            <li><strong>Basses:</strong> {{ model.sb }}</li>
+            <li><strong>Registers Right:</strong> {{ model.regR }}</li>
+            <li><strong>Registers Left:</strong> {{ model.regL }}</li>
+            <li><strong>Reeds Right:</strong> {{ model.reedsR }}</li>
+            <li><strong>Reeds Left:</strong> {{ model.reedsL }}</li>
         </ul>
+        <p> Accessories: Case, Shoulder straps</p>
+        <p> Asset's returning date: {{ contract.endDate }} </p>
+
+
     </div>
 </div>
 
@@ -110,6 +139,15 @@
         <li>Only make minor, non-invasive adjustments; any repairs or significant adjustments should be done by a professional.</li>
         <li>If transporting the instrument, ensure it is securely fastened in a padded case to prevent damage.</li>
     </ul>
+</div>
+<div class="appendix">
+    <h2>APPENDIX 3: PAYMENT INSTRUCTIONS</h2>
+    <ul>
+        <li>The rental fee: The rental fee: {{ contract.rate }} euros per month is to be paid to bank account XXXXXXXXXXX in XXX Bank.</li>
+        <li>The market value of the comparable new assets {{ model.newPrice }} euros, used  {{ model.usedPrice }} euros.</li>
+    </ul>
+    <p>Notes about the condition of the assets on the moment starting the lease: {{ instrument.info_eng }}</p>
+    
 </div>
 
 </body>

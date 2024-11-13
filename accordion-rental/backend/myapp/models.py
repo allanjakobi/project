@@ -6,7 +6,8 @@ from datetime import timedelta
 from django.contrib.auth.models import User
 
 #from .models import Rendipillid
-import datetime
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 
 class Model(models.Model):
     modelId = models.AutoField(primary_key=True)
@@ -145,7 +146,9 @@ class Agreements(models.Model):
 
     @property
     def endDate(self):
-        end_date = self.startDate + timedelta(days=30 * self.invoiceInterval)
+        # Calculate the end date based on start date and the invoice interval (in months)
+        end_date = self.startDate + timedelta(days=30 * self.months)  # Assuming months is in whole months
+        # If the calculated end date is in the future, return it; otherwise, return the current date.
         return min(end_date, datetime.now().date())
 
     class Meta:

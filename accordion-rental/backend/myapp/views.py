@@ -8,10 +8,13 @@ from .models import Agreements, Rates, Rendipillid, Users, Model, Invoices
 from .serializers import ModelSerializer, RendipillidSerializer
 from django.shortcuts import render
 from .forms import RendipillidForm
+from datetime import timedelta
+from dateutil.relativedelta import relativedelta
+
 
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
-
+from django.core.mail import EmailMessage
 from rest_framework import viewsets
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
@@ -32,9 +35,19 @@ from django.contrib.auth.models import User
 import jwt
 from django.shortcuts import get_object_or_404
 import logging
+import tempfile
 from dateutil.relativedelta import relativedelta
 from weasyprint import HTML
 from django.template.loader import render_to_string
+import smtplib
+import ssl
+import certifi
+from django.core.mail import EmailMessage
+from io import BytesIO
+
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
 
 
 logger = logging.getLogger(__name__)
@@ -218,8 +231,6 @@ def profile_view(request):
     except User.DoesNotExist:
         return Response({"error": "User not found"}, status=404)
     
-    print("zzz", auth_user_email)
-
     # Try to fetch or create a user profile based on user_id
     user_profile, created = Users.objects.get_or_create(
         user_id=user_id,
@@ -297,71 +308,110 @@ def check_login(request):
 @csrf_exempt  # Make sure to include CSRF token handling in frontend#        
 #@permission_classes([IsAuthenticated])  # Only allow authenticated users
 def create_agreement(request):
+   
     access_token = request.COOKIES.get('access_token')
-    username = get_user_from_token(access_token)
     user = get_user_id_from_token(access_token)
     data = json.loads(request.body)
-    authorization_header = request.headers.get('Authorization')
     
-
-
-    # Extracting instrumentId and other necessary fields
-    instrument_id = data.get('instrumentId')
-    rental_period = data.get('months')
+    instrument_id = int(data.get('instrumentId'))
+    rental_period = int(data.get('months'))
     additional_info = data.get('info')
-    rate = data.get('rate')
-    invoice_interval = data.get('invoiceInterval')
+    rate = int(data.get('rate'))
+    invoice_interval = int(data.get('invoiceInterval'))
     
+    startDate = datetime.now()
+    date1 = startDate + timedelta(days=7)
+    date2 = date1 + relativedelta(months=1)
+    date3 = date2 + relativedelta(months=1)
     
- 
-
-    # Check if instrument_id is provided
     if not instrument_id:
         return JsonResponse({"error": "Instrument ID is required"}, status=400)
-
+    
     try:
-        # Fetch the instrument instance from the Rendipillid model
         instrument = Rendipillid.objects.get(instrumentId=instrument_id)
         if rate:
-            if 0 <= rental_period < 4:
-                rate = round(rate * 2.1)  # 0-3 months
-            elif 4 <= rental_period < 12:
-                rate = round(rate * 1.4)  # 4-11 months
-            else:
-                rate = rate  # 12 months or greater
-
-        user_instance = get_object_or_404(Users, user=user)  # Retrieve the actual Users instance
-
+            rate = calculate_rate(rate, rental_period)  # Helper function for rate calculation
         
-        # Create a new agreement
+        user_instance = get_object_or_404(Users, user_id=user)
         agreement = Agreements.objects.create(
             userId=user_instance,
-            instrumentId=instrument,  # Use the fetched instrument instance
-            startDate=datetime.now(),
+            instrumentId=instrument,
+            startDate=startDate,
             months=rental_period,
             rate=rate,
             info=additional_info,
-            status='Created',  # Ensure the status matches your choices
+            status='Created',
             invoice_interval=invoice_interval,
         )
+        
+        language = user_instance.language
+        template_name = 'agreement_template_est.html' if language in ['Eesti', 'Estonian'] else 'agreement_template_eng.html'
+        context = {
+            'agreement': agreement,
+            'instrument': instrument,
+            'startDate': agreement.startDate,
+            'date1': date1,
+            'date2': date2,
+            'date3': date3,
+            'rate': rate,
+            'rental_period': rental_period,
+        }
+        
+        html_content = render_to_string(template_name, context)
+        pdf_file = HTML(string=html_content).write_pdf()
+        
+        
+        
+        smtp_server = 'smtp.zone.eu'  # Replace with your SMTP server
+        smtp_port = 587  # Typically 587 for STARTTLS
 
+        # Create an SSL context without certificate verification (not recommended for production)
+        context = ssl.create_default_context()
+        context.check_hostname = False  # Disable hostname check
+        context.verify_mode = ssl.CERT_NONE  # Disable certificate verification
+
+        # Create the email message
+        msg = MIMEMultipart()
+        msg['From'] = 'info@akordion.ee' 
+        msg['To'] = user_instance.email
+        msg['Subject'] = 'Your Rental Agreement'
+
+        body = 'Please find attached your rental agreement.\n Please send the agreement digitally signed to the e-mail info@akordion.ee \n'
+        msg.attach(MIMEText(body, 'plain'))
+        #attachment       
+        part = MIMEApplication(pdf_file, _subtype='pdf')
+        part.add_header('Content-Disposition', 'attachment', filename=f"agreement_{agreement.agreementId}.pdf")
+        msg.attach(part)
+
+        # Establish SMTP connection
+        try:
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                server.starttls(context=context)  # Use the context with no verification
+                server.login('info@akordion.ee', 'ogrmactpyqsgvqks')  # Use your SMTP credentials
+                server.sendmail(msg['From'], msg['To'], msg.as_string())
+            print("Email sent successfully.")
+        except Exception as e:
+            print(f"Error sending email: {e}") 
+        
         return JsonResponse({
-            "message": "Agreement created successfully.",
+            "message": "Agreement created successfully and sent via email.",
             "agreement_id": agreement.agreementId,
-            "instrument": {
-                "instrument_id": instrument.instrumentId,
-                "rate": rate
-            },
+            "instrument": {"instrument_id": instrument.instrumentId, "rate": rate},
             "rental_period": rental_period,
             "start_date": agreement.startDate,
         }, status=201)
-
-    except Rates.DoesNotExist:
-        return JsonResponse({"error": "Rate not found for specified price level."}, status=400)
+          
     except Rendipillid.DoesNotExist:
         return JsonResponse({"error": "Instrument not found."}, status=400)
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        return JsonResponse({"error": str(e)}, status=500) 
+
+def calculate_rate(base_rate, rental_period):
+    if 0 <= rental_period < 4:
+        return round(base_rate * 2.1)
+    elif 4 <= rental_period < 12:
+        return round(base_rate * 1.4)
+    return base_rate
     
 @api_view(['GET'])
 def get_rate(request, price_level_id):
@@ -460,6 +510,61 @@ def contracts_view(request):
             continue
 
     return JsonResponse(data, safe=False)
+
+
+def download_contract(request, contract_id):
+    # Fetch the contract, related agreement, and user data
+    agreement = get_object_or_404(Agreements, pk=contract_id)
+    instrument = agreement.instrumentId
+    model = instrument.modelId  # Assuming each instrument has a related model
+    user_profile = agreement.userId  # Assuming agreement.userId is a foreign key to Users
+    startDate = agreement.startDate
+    date1 = startDate + timedelta(days=7)
+    date2 = date1 + relativedelta(months=1)
+    date3 = date2 + relativedelta(months=1)
+    
+    # Prepare the data to pass into the template
+    
+    
+    contract_data = {
+        'agreement': agreement,
+        'instrument': instrument,
+        'model': model,
+        'user_profile': user_profile,
+        'startDate': agreement.startDate,
+        'endDate': agreement.endDate,
+        'rate': agreement.rate,
+        'rental_period': f"{agreement.startDate} to {agreement.endDate}",
+        'instrument_details': {
+            'serial': instrument.serial,
+            'instrumentId': instrument.instrumentId,
+            'status': instrument.status,
+            'color': instrument.color,
+        },
+        'date1': date1,
+        'date2': date2,
+        'date3': date3,
+    }
+   
+    #user_profile = agreement.userId
+   # user_instance = get_object_or_404(Users, user_id=user_profile.userId)
+   
+    language = user_profile.language
+    
+    template_name = 'agreement_template_est.html' if language in ['Eesti', 'Estonian'] else 'agreement_template_eng.html'
+    
+    # Render the HTML template for the contract
+    html_content = render_to_string(template_name, contract_data)
+    
+    
+    # Generate the PDF from the HTML content
+    pdf_file = HTML(string=html_content).write_pdf()
+
+    # Create the response and set the content type as PDF
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="Contract_{agreement.agreementId}.pdf"'
+    return response
+
 
 @api_view(['GET'])
 def invoices_view(request):
