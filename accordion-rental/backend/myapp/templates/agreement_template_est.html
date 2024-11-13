@@ -1,49 +1,142 @@
 <!DOCTYPE html>
-<html lang="et">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Rendileping</title>
     <style>
         body { font-family: Arial, sans-serif; }
-        h1 { color: #333; }
-        p { line-height: 1.6; }
+        h1 { font-size: 20px; color: #333; }
+        h2 { font-size: 14px; color: #333; }
+        p, ul { line-height: 1.6; }
         .section { margin-top: 20px; }
+        .appendix { margin-top: 30px; padding: 15px; border-top: 1px solid #333; }
+        .instrument-details { margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<h1>RENDILEPING nr {{ agreement.agreementId }}</h1>
+<h1>RENDITAV LEPING Nr. {{ agreement.agreementId }}</h2>
 
 <div class="section">
-    <h2>1. DEFINITSIOONID</h2>
-    <p><strong>Rendileandja</strong> – Allan Jakobi</p>
-    <p><strong>Rentnik</strong> - {{ user.firstName }} {{ user.lastName }}</p>
-    <p><strong>Pool</strong> - Rendileandja või Rentnik</p>
-    <p><strong>Leping</strong> - Poolte vahel sõlmitud Varade rendileping koos selle Lisadega 1 ja 2</p>
-    <p><strong>Vara</strong> - Lepingu alusel renditav muusikainstrument või muu vara, mille loetelu on fikseeritud Lepingu Lisas 1</p>
+    <h2>1. MÕISTED</h2>
+    <p><strong>Rendileandja</strong> – Rendileandja</p>
+    <p><strong>Rentnik</strong> - {{ user_profile.firstName }} {{ user_profile.lastName }}</p>
+    <p><strong>Osapool</strong> - Kas rendileandja või rentnik</p>
+    <p><strong>Leping</strong> - Käesolev rendileping osapoolte vahel, sealhulgas lisad 1 ja 2</p>
+    <p><strong>Ese</strong> - Muusikainstrument või muu vara, mis on renditud lepingu alusel ja mis on loetletud lisas 1</p>
 </div>
 
 <div class="section">
     <h2>2. RENTNIKU KINNITUSED</h2>
-    <p>Rentnik kinnitab, et puuduvad asjaolud, mis takistaksid kohustuste täitmist ja et ta on renditava varaga tutvunud.</p>
-    <!-- Add more sections similarly... -->
+    <p>Rentnik kinnitab, et ei ole asjaolusid, mis takistaksid lepingu täitmist, ja et ta on kursis renditud eseme ja selle seisukorraga.</p>
+    <p>Rentnikul on kohustus järgida renditava eseme kasutusjuhiseid (lepingu lisa 2).</p>
 </div>
 
 <div class="section">
-    <h2>4. RENDITASU JA RAHALISED KOHUSTISED</h2>
+    <h2>3. LEPINGU KEHTIVUSAEG</h2>
+    <p>Käesolev leping kehtib {{ agreement.months }} kuud alates kuupäevast {{ agreement.startDate }}.</p>
+    <p>Leping loetakse lõppenuks, kui ese on rendileandjale täielikult tagastatud.</p>
+</div>
+
+<div class="section">
+    <h2>4. RENDITASU JA FINANTSKOHUSTUSED</h2>
     <p><strong>Renditasu:</strong> {{ rate }} € kuus</p>
-    <p><strong>Maksete tähtajad:</strong> Iga kuu {{ startDate + 7 }}</p>
-    <p>Viivis: 0,5% päevas tähtaegselt tasumata summalt</p>
+    <p><strong>Makse tähtajad:</strong> </p>
+    <p>Maksed on tasutavad iga kuu {{ date1 }}, {{ date2 }}, {{ date3 }}... alustades esimesest kuupäevast.</p>
+    <p><strong>Viivis:</strong> Viivis on 0,5% päevas tasumata summalt kuni täieliku tasumiseni. Rentnik on kohustatud hüvitama kõik täitmisele kulunud kulud.</p>
 </div>
 
 <div class="section">
     <h2>5. RENTNIKU ÕIGUSED JA KOHUSTUSED</h2>
-    <p>Rentnik kohustub kasutama vara heaperemehelikult ja järgima renditingimusi.</p>
+    <p>Rentnik kohustub:</p>
+    <ul>
+        <li>Kasutama eset hoolikalt ja vastavalt selle otstarbele;</li>
+        <li>Tagama, et ese on kaitstud kahjustuste, varguse või kaotsimineku eest;</li>
+        <li>Teavitama rendileandjat koheselt eseme kahjustamisest või probleemidest;</li>
+        <li>Tagastama eseme rendiperioodi lõpus samas seisukorras, arvestades normaalset kulumist.</li>
+    </ul>
+    <p>Eseme tagastamise kohustus lasub täielikult rentnikul.</p>
 </div>
 
 <div class="section">
-    <h2>8. LEPINGU LÕPPEMINE</h2>
-    <p>Leping lõpeb tähtaja saabumisel või vara tagastamisel.</p>
+    <h2>6. RENDILEANDAJA ÕIGUSED JA KOHUSTUSED</h2>
+    <p>Rendileandja kohustub:</p>
+    <ul>
+        <li>Andma rentnikule rendieseme heas töökorras;</li>
+        <li>Olema kättesaadav, et vastata kõikidele mõistlikele küsimustele või muredele eseme kasutamise osas.</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>7. KAHJU EEST VASTUTUS</h2>
+    <p>Rentnik vastutab kahju eest, mis on tekitatud esemele hooletuse või väärkasutuse tõttu. Varguse või täieliku kaotsimineku korral kohustub rentnik hüvitama rendileandjale eseme asenduskulu.</p>
+</div>
+
+<div class="section">
+    <h2>8. LEPINGU LÕPETAMINE</h2>
+    <p>Käesolevat lepingut saab lõpetada osapoolte kokkuleppel, rendiperioodi lõppemise korral või eseme tagastamisel rendileandjale rahuldavas seisukorras.</p>
+    <p>Ennetähtaegne lõpetamine on võimalik, tasudes lisaks 2 kuu tasu (punkt 4).</p>
+</div>
+
+<div class="section">
+    <h2>9. MUUD TINGIMUSED</h2>
+    <p>Mõlemad osapooled kohustuvad täitma käesoleva lepingu ja lisade tingimusi. Lepingu muudatused kehtivad ainult juhul, kui need on kirjalikult allkirjastatud mõlema osapoole poolt.</p>
+</div>
+
+<div class="section">
+    <h2>10. OSAPOOLED</h2>
+    <p>Rendileandja</p>
+
+    <ul>
+        <li>Nimi: NAME</li>
+        <li>RegNr: RegNr</li>
+        <li>Aadress: Address</li>
+        <li>e-mail: Email</li>
+        <li>Telefon: XXXXXXXX</li>
+        <li>Pangakonto: XXXX</li>        
+    </ul>
+
+    <p>Rentnik</p>
+    <ul>
+        <li>Nimi: {{ user_profile.firstName }} {{ user_profile.lastName }}</li>
+        <li>Aadress: {{ user_profile.street }} {{ user_profile.house }} {{ user_profile.apartment }} {{ user_profile.settlement }} {{ user_profile.municipality }} {{ user_profile.province }}, {{ user_profile.country }}</li>
+        <li>Telefon: {{ user_profile.phone }}</li>
+        <li>e-mail: {{ user_profile.email }}</li>
+        <li>Õpetaja: {{ user_profile.teacher }}</li>
+        <li>Kool: {{ user_profile.school }}</li>   
+    </ul>
+</div>
+
+<div class="appendix">
+    <h2>LISA 1: ESEME DETAILID</h2>
+    <div class="instrument-details">
+        <p><strong>Instrumendi mudel:</strong> {{ model.brand }} {{ model.model }}</p>
+        <p><strong>Instrumendi seerianumber:</strong> {{ instrument.serial }}</p>
+        <p><strong>Instrumendi spetsifikatsioonid:</strong></p>
+        <ul>
+            <li><strong>Värv:</strong> {{ instrument.color }}</li>
+            <li><strong>Klahvid:</strong> {{ model.keys }}</li>
+            <li><strong>Bassid:</strong> {{ model.sb }}</li>
+            <li><strong>Parempoolne registrite arv:</strong> {{ model.regR }}</li>
+            <li><strong>Vasakpoolne registrite arv:</strong> {{ model.regL }}</li>
+            <li><strong>Parempoolsed keeled:</strong> {{ model.reedsR }}</li>
+            <li><strong>Vasakpoolsed keeled:</strong> {{ model.reedsL }}</li>
+        </ul>
+        <p> Tarvikud: Kott, õlarihmad</p>
+        <p> Eseme tagastamise kuupäev: {{ contract.endDate }} </p>
+    </div>
+</div>
+
+<div class="appendix">
+    <h2>LISA 2: HOOLDUS- JA KÄITLEMISJUHISED</h2>
+    <p>Rentnik nõustub järgima järgmisi juhiseid eseme heas seisukorras hoidmiseks:</p>
+    <ul>
+        <li>Hoiusta instrumenti kuivas ja stabiilses keskkonnas, eemal otsesest päikesevalgusest ja äärmuslikest temperatuuridest.</li>
+        <li>Käsitse instrumenti hoolikalt, vältides tugevaid lööke või muud karmi kohtlemist.</li>
+        <li>Puhasta instrument pehme ja tolmuvaba lapiga; ära kasuta vett ega keemilisi puhastusvahendeid.</li>
+        <li>Tee ainult väiksemaid, mitteinvasiivseid muudatusi; kõik parandused või suuremad muudatused tuleb teha professionaali poolt.</li>
+        <li>Kui instrumenti transporditakse, siis veendu, et see on korralikult pakitud ja kaitstud kahjustuste eest.</li>
+    </ul>
 </div>
 
 </body>
