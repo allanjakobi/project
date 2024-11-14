@@ -753,3 +753,23 @@ def get_user_id_from_token(token):
         return JsonResponse({"error": "Invalid token"}, status=401)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    
+@api_view(['POST'])
+#@permission_classes([IsAuthenticated])
+def reserve_instrument(request, instrument_id):
+    print("WWWWWWWWW", instrument_id)
+    try:
+        # Find the instrument by ID
+        instrument = Rendipillid.objects.get(instrumentId=instrument_id)
+        print("PILLI nr", instrument.instrumentId)
+        
+        # Update the status to "Reserved"
+        instrument.status = "Reserved"
+        instrument.save()
+
+        return Response({"message": "Instrument reserved successfully."}, status=status.HTTP_200_OK)
+    
+    except Rendipillid.DoesNotExist:
+        return Response({"error": "Instrument not found."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

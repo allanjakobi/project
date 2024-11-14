@@ -4,16 +4,39 @@ import { useNavigate } from 'react-router-dom';
 
 const InstrumentDetails = ({ instrument, onBack, isLoggedIn }) => {
   const navigate = useNavigate();
+  const accessToken = localStorage.getItem('access_token'); // Replace with your storage method if needed
+
   
   const imageUrl = useBreakpointValue({
     base: instrument.mobile_image,
     md: instrument.desktop_image,
   });
 
-  const handleReserve = () => {
+  const handleReserve = async () => {
     if (isLoggedIn) {
-      navigate('/rent', { state: { instrument } });
+      try {
+        // Assuming you have an API endpoint to reserve the instrument
+        
+        const response = await fetch(`/api/instruments/${instrument.instrumentId}/reserve`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`, // If you are using JWT for auth
+          },
+          body: JSON.stringify({ status: 'Reserved' }),
+        });
+  
+        if (response.ok) {
+          // Navigate to rent page with instrument details
+          navigate('/rent', { state: { instrument: { ...instrument, status: 'Reserved' } } });
+        } else {
+          console.error('Failed to reserve the instrument.');
+        }
+      } catch (error) {
+        console.error('Error updating instrument status:', error);
+      }
     } else {
+      // Navigate to login page if not logged in
       navigate('/login');
     }
   };
