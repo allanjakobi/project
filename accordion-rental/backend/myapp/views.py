@@ -4,6 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework import generics
+from rest_framework.views import APIView
+
 from .models import Agreements, Rates, Rendipillid, Users, Model, Invoices
 from .serializers import ModelSerializer, RendipillidSerializer
 from django.shortcuts import render
@@ -51,6 +53,7 @@ from email.mime.application import MIMEApplication
 from django.utils import timezone
 from django.db.models import Case, When, F, Value, DateField
 from django.db.models.functions import Now
+from .tasks import reset_instrument_status
 
 
 
@@ -757,19 +760,49 @@ def get_user_id_from_token(token):
 @api_view(['POST'])
 #@permission_classes([IsAuthenticated])
 def reserve_instrument(request, instrument_id):
-    print("WWWWWWWWW", instrument_id)
     try:
         # Find the instrument by ID
-        instrument = Rendipillid.objects.get(instrumentId=instrument_id)
-        print("PILLI nr", instrument.instrumentId)
-        
+        instrument = Rendipillid.objects.get(instrumentId=instrument_id)        
         # Update the status to "Reserved"
-        instrument.status = "Reserved"
-        instrument.save()
-
-        return Response({"message": "Instrument reserved successfully."}, status=status.HTTP_200_OK)
+        if instrument.status == "Available":
+            instrument.status = "Reserved"
+            instrument.save()
+            
+            # Schedule the reset task to run in 3 minutes
+            reset_instrument_status(instrument.instrumentId)
+            
+            return Response({"message": "Instrument reserved successfully."})
+        else:
+            return Response({"message": "Instrument is not available."}, status=400)
     
     except Rendipillid.DoesNotExist:
         return Response({"error": "Instrument not found."}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+class ReserveInstrumentView(APIView):
+    # Uncomment the following line if you want to require authentication
+    # permission_classes = [IsAuthenticated]
+
+    def post(self, request, instrument_id):
+        try:
+            # Find the instrument by ID
+            instrument = get_object_or_404(Rendipillid, instrumentId=instrument_id)
+            
+            # Update the status to "Reserved" if it’s currently "Available"
+            if instrument.status == "Available":
+                instrument.status = "Reserved"
+                instrument.save()
+                print("about to reset.. in 3 min")
+                
+                # Schedule the reset task to run in 3 minutes
+                reset_instrument_status(instrument.instrumentId)
+
+                return Response({"message": "Instrument reserved successfully."})
+            else:
+                return Response({"message": "Instrument is not available."}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Rendipillid.DoesNotExist:
+            return Response({"error": "Instrument not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
