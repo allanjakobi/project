@@ -3,8 +3,12 @@ from myapp.models import Agreements, Invoices
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from django.db.models import Q
+from datetime import datetime
 
 class Command(BaseCommand):
+    print("Invoice creation started")
+    print("schedulder: auto_create_invoices", datetime.now().strftime("%d.%m.%Y") )
+
     help = 'Automatically create invoices for all active agreements up to a specified date.'
 
     def add_arguments(self, parser):

@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'sslserver',
     'myapp',
+    'scheduler',
 ]
 
 MIDDLEWARE = [
