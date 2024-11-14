@@ -10,7 +10,6 @@ from .models import Agreements, Rates, Rendipillid, Users, Model, Invoices
 from .serializers import ModelSerializer, RendipillidSerializer
 from django.shortcuts import render
 from .forms import RendipillidForm
-from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 
 
@@ -30,7 +29,7 @@ from rest_framework import status
 from django.http import JsonResponse, HttpResponse
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth.models import User
@@ -365,6 +364,7 @@ def create_agreement(request):
     invoice_interval = int(data.get('invoiceInterval'))
     
     startDate = datetime.now()
+    print("startDate", startDate)
     date1 = startDate + timedelta(days=7)
     date2 = date1 + relativedelta(months=1)
     date3 = date2 + relativedelta(months=1)
@@ -405,8 +405,6 @@ def create_agreement(request):
         html_content = render_to_string(template_name, context)
         pdf_file = HTML(string=html_content).write_pdf()
         
-        
-        
         smtp_server = 'smtp.zone.eu'  # Replace with your SMTP server
         smtp_port = 587  # Typically 587 for STARTTLS
 
@@ -437,6 +435,9 @@ def create_agreement(request):
             print("Email sent successfully.")
         except Exception as e:
             print(f"Error sending email: {e}") 
+        
+        instrument.status="AgreementInProgress"
+        instrument.save()
         
         return JsonResponse({
             "message": "Agreement created successfully and sent via email.",
@@ -476,7 +477,7 @@ def get_rate(request, price_level_id):
         return JsonResponse({"error": str(e)}, status=500)
     
 def calculate_reference_number(agreementId):
-    year = datetime.datetime.now().year
+    year = datetime.now().year
     base_number = f"{year}{agreementId}"
 
     if not base_number.isdigit():

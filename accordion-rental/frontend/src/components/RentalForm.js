@@ -53,6 +53,17 @@ const RentalForm = ({ userId }) => {
     return null;
 };
 
+useEffect(() => {
+  // Set a timeout to navigate back to the homepage after 180 seconds (3 minutes)
+  const timer = setTimeout(() => {
+    navigate('/');
+  }, 120000); // 180000 milliseconds = 3 minutes
+
+  // Clean up the timer if the component unmounts before the timer finishes
+  return () => clearTimeout(timer);
+}, [navigate]);
+  
+
   // Fetch rate based on price_level when the component mounts
   useEffect(() => {
     if (instrument?.price_level) {

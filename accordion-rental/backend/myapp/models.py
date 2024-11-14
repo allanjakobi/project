@@ -60,7 +60,7 @@ class Rendipillid(models.Model):
     serial = models.CharField(max_length=64)
     info_est = models.TextField()
     info_eng = models.TextField()
-    status = models.CharField(max_length=64, default='Available') #Available, Reserved, AgreementInProgress, Rented, Sold, OutOfService, LostOrStolen, 
+    status = models.CharField(max_length=64, default='Available') #Available, Reserved, AgreementInProgress, Rented, Sold, Other, OutOfService, LostOrStolen, 
     price_level = models.ForeignKey(Rates, on_delete=models.CASCADE)
 
     class Meta:
@@ -195,7 +195,7 @@ class Agreements(models.Model):
 
 
 def calculate_reference_number(agreementId):
-    year = datetime.datetime.now().year
+    year = datetime.now().year
     base_number = f"{year}{agreementId}"
 
     if not base_number.isdigit():

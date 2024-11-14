@@ -2,7 +2,7 @@ from background_task import background
 from django.utils import timezone
 from .models import Rendipillid
 
-@background(schedule=30)  # 30 seconds (30 sec)
+@background(schedule=120)  # 120 seconds (2 min)
 def reset_instrument_status(instrument_id):
     print("RESET STARTED")
     try:
