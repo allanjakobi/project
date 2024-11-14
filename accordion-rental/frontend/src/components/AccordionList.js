@@ -81,10 +81,14 @@ const AccordionList = ({ isLoggedIn }) => {
                   <Badge colorScheme={instrument.status === 'Available' ? 'green' : 'red'} mb={2}>
                     {instrument.status}
                   </Badge>
-                  
-                  <Text fontSize="md" fontWeight="bold" color="gray.700">
-                    Price Level: {instrument.price_level}
+                  <Text fontSize="md" color="gray.700">
                   </Text>
+                  {instrument.status !== "Available" && (
+                      <Text fontSize="md" color="gray.700">
+                          {instrument.predicted_availability}
+                      </Text>
+                  )}
+                  
 
                   <Heading as="h4" size="md" mt={4} mb={2} color="teal.500">
                     Model Details

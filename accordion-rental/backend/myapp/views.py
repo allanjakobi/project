@@ -48,6 +48,10 @@ from io import BytesIO
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
+from django.utils import timezone
+from django.db.models import Case, When, F, Value, DateField
+from django.db.models.functions import Now
+
 
 
 logger = logging.getLogger(__name__)
@@ -100,7 +104,7 @@ def rendipillid_create(request):
     queryset = Rendipillid.objects.all()
     serializer_class = RendipillidSerializer """
 
-def rendipillid_list_view(request):
+""" def rendipillid_list_view(request):
     # Fetch all rendipillid entries, including related model data
     rendipillid_list = Rendipillid.objects.select_related('modelId', 'price_level').all()
     return render(request, 'rendipillid_list.html', {'rendipillid_list': rendipillid_list})
@@ -108,9 +112,47 @@ def rendipillid_list_view(request):
 #@method_decorator(csrf_exempt, name='dispatch')
 class AvailableInstrumentsViewSet(viewsets.ViewSet):
     def list(self, request):
-        available_instruments = Rendipillid.objects.filter(Q(status="Available") | Q(status="Reserved")).select_related('modelId', 'price_level')  # Use modelId
+        available_instruments = Rendipillid.objects.filter(Q(status="Available") | Q(status="Reserved") | Q(status="AgreementInProgress") | Q(status="Rented") | Q(status="Other")).select_related('modelId', 'price_level')  # Use modelId
         serializer = RendipillidSerializer(available_instruments, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data) """
+
+class AvailableInstrumentsViewSet(viewsets.ViewSet):
+    def list(self, request):
+        today = timezone.now().date()
+        
+        # Fetch instruments and their related models
+        available_instruments = Rendipillid.objects.filter(
+            Q(status="Available") | Q(status="Reserved") | Q(status="AgreementInProgress") | Q(status="Rented") | Q(status="Other")
+        ).select_related('modelId', 'price_level')
+        
+        # Prepare the serialized data with a calculated `date`
+        instrument_data = []
+        for instrument in available_instruments:
+            if instrument.status in ["Reserved", "Available"]:
+                date = today
+            elif instrument.status in ["AgreementInProgress", "Rented"]:
+                # Retrieve the related agreement and calculate the end date
+                agreement = Agreements.objects.filter(instrumentId=instrument.instrumentId).first()
+                if agreement:
+                    # Calculate the end date based on `startDate` and `months` interval
+                    end_date = agreement.startDate + timedelta(days=30 * agreement.months)
+                    date = min(end_date, today) if end_date > today else today
+                else:
+                    date = today  # Default to today if no agreement found
+            else:
+                # Default case for "Other": set to today + 1 year
+                date = today.replace(year=today.year + 1)
+            
+            # Append calculated date to each instrument's data
+            instrument_dict = RendipillidSerializer(instrument).data
+            instrument_dict['predicted_availability'] = f"Predicted to be available: {date.strftime('%d.%m.%Y')}"
+            instrument_data.append((date, instrument_dict))
+        
+        # Sort by the calculated date and return only the serialized data
+        instrument_data.sort(key=lambda x: x[0])
+        sorted_data = [item[1] for item in instrument_data]
+        
+        return Response(sorted_data)
 
 
 def is_admin(user):
