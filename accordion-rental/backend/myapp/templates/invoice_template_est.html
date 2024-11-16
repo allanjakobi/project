@@ -84,16 +84,14 @@
 </head>
 <body>
 
-
 <div class="invoice-container">
     <!-- Header Section -->
     <div class="header">
         <div class="client-info">
-            <h3>Accordion rent</h3>
-            <p>Name: {{ user.firstName }} {{ user.lastName }}</p>
-            <p>Address: {{ user.street }} {{ user.house }} {{ user.apartment }} {{ user.settelment }} {{ user.municipality }} {{ user.province }}, {{ user.country }}</p>
+            <h3>Akordioni rent</h3>
+            <p>Nimi: {{ user.firstName }} {{ user.lastName }}</p>
+            <p>Aadress: {{ user.street }} {{ user.house }} {{ user.apartment }} {{ user.settelment }} {{ user.municipality }} {{ user.province }}, {{ user.country }}</p>
         </div>
-    
         <div class="company-logo">
             <img src="{{ logoLink }}" alt="Company Logo"> <!-- Display the logo -->
 
@@ -102,62 +100,62 @@
 
     <!-- Invoice Information Section -->
     <div class="invoice-info">
-        <p><strong>Invoice nr. </strong> {{ invoice.id }}</p>
-        <p><strong>Date:</strong> {{ invoice.date }}</p>
-        <p><strong>Due Date:</strong> 7 days</p>
-        <p><strong>Reference #:</strong> {{ agreement.referenceNr }}</p> 
+        <p><strong>Arve nr. </strong> {{ invoice.id }}</p>
+        <p><strong>Kuupäev:</strong> {{ invoice.date }}</p>
+        <p><strong>Tasumise tähtaeg:</strong> 7 days</p>
+        <p><strong>Ref. nr:</strong> {{ agreement.referenceNr }}</p> 
     </div>
 
     <!-- Instrument Image -->
     <div class="instrument-image">
-        <img src={{ instrument.imageLink }} alt="image" style="max-width: 100%; margin: 20px 0;">
+        <img src="{{ imageLink }}" alt="" style="max-width: 100%; margin: 20px 0;">
     </div>
 
     <!-- Invoice Table -->
     <table class="invoice-table">
         <thead>
             <tr>
-                <th>Item</th>
-                <th>Amount</th>
-                <th>Rate</th>
-                <th>Sum</th>
+                <th>Rendiese</th>
+                <th>Perioodi pikkus</th>
+                <th>Maksumus</th>
+                <th>Summa</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>Instrument Rental : {{ instrument.brand }} {{ instrument.model }}</td>
+                <td>Akordioni rent : {{ instrument.brand }} {{ instrument.model }}</td>
                 <td>{{ invoice.quantity }}</td>
                 <td>{{ agreement.rate }}</td>
                 <td>{{ invoice.total }}</td>
             </tr>
             <tr class="totals-row">
-                <td colspan="3" style="text-align: right;"><strong>Total:</strong></td>
+                <td colspan="3" style="text-align: right;"><strong>Kokku:</strong></td>
                 <td><strong>{{ invoice.total }}</strong></td>
             </tr>
             <tr>
-                <td colspan="4" style="font-size: 12px;">Additional Info: {{ agreement.info }}</td>
+                <td colspan="4" style="font-size: 12px;">Lisainfo: {{ agreement.info }}</td>
             </tr>
         </tbody>
     </table>
-    <p style="font-size: 10px;">The interest on late payments will be calculated from the payment due date at a rate of 0.05% per day.</p>
+    <p style="font-size: 10px;">Arve mittetähtaegse tasumise korral rakenduv viivis 0,5% päevas tasumata summalt.</p>
 
 
     <!-- Footer Section -->
     <div class="footer">
         <div>
-            <h4>Company Info</h4>
+            <h4>Ettevõte:</h4>
             <p>Accordion Rental Ltd</p>
             <p>RegNr: xxxxxxx</p>
-            <p>Address1: XXX</p>
-            <p>Address2: XXX</p>
+            <p>Aadress: XXX</p>
+            <p>Aadress: XXX</p>
         </div>
         <div>
-            <h4>Payment Details</h4>
+            <h4>Pangaandmed:</h4>
             <p>Bank1 xxxxxxxxxx, IBAN XXXXXXXX</p>
             <p>Bank1 xxxxxxxxxx, IBAN XXXXXXXX</p>
         </div>
         <div>
-            <h4>Contact</h4>
+            <h4>Kontakt:</h4>
             <p>Phone: +XXXXXXXX</p>
             <p>Email: info@akordion.ee</p>
             

@@ -8,6 +8,13 @@ def start():
     scheduler.add_job(
         lambda: call_command("auto_create_invoices", datetime.now().strftime("%d.%m.%Y")),
         "interval",
-        minutes=1,
+        minutes=3,
     )
+    scheduler.add_job(
+    lambda: call_command("process_issued_invoices"),
+    "interval",
+    minutes=3,
+    )
+    
+    
     scheduler.start()

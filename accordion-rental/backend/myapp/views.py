@@ -683,8 +683,9 @@ def download_invoice(request, invoice_id):
     invoice = get_object_or_404(Invoices, pk=invoice_id)
     agreement = invoice.agreement
     user_profile = agreement.userId  # Assuming agreement.userId is a foreign key to Users
-
+    imageLink = "/media/300/R"+str(agreement.instrumentId_id)+".jpg"
     invoice_data = {
+        "agreement": agreement,
         "invoice": {
             "id": invoice.id,
             "date": invoice.date,
@@ -705,19 +706,24 @@ def download_invoice(request, invoice_id):
             "settlement": user_profile.settlement,
             "municipality": user_profile.municipality,
         },
-        "agreement": {
-            "referenceNr": agreement.referenceNr,
-            "startDate": agreement.startDate,
-            "months": agreement.months,
-            "rate": agreement.rate,
-            "status": agreement.status,
-            "invoice_interval": agreement.invoice_interval,
+        "instrument": {
+            "brand": agreement.instrumentId.modelId.brand,
+            "model": agreement.instrumentId.modelId.model,
+            "imageLink": imageLink,
         },
+         
+        
+         
+        
          "logoLink": '/media/logo.jpg'
     }
+    
+    language = user_profile.language
+    
+    template_name = 'invoice_template_est.html' if language in ['Eesti', 'Estonian'] else 'invoice_template.html'
 
     # Render HTML template
-    html_content = render_to_string('invoice_template.html', invoice_data)
+    html_content = render_to_string(template_name, invoice_data)
     pdf_file = HTML(string=html_content).write_pdf()
 
     response = HttpResponse(pdf_file, content_type='application/pdf')
