@@ -8,12 +8,13 @@ from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 import ssl
 from django.utils.timezone import now
+from django.conf import settings
 
 class Command(BaseCommand):
     help = "Process all invoices with status 'Issued'"
 
     def handle(self, *args, **kwargs):
-        print(f"[{now()}] Starting invoice processing...XX")
+        print(f"[{now()}] Starting invoice processing...")
         invoices = Invoices.objects.filter(status="Issued")
 
         for invoice in invoices:
@@ -64,28 +65,32 @@ class Command(BaseCommand):
                 pdf_file = HTML(string=html_content).write_pdf()
 
                 # Send email
-                smtp_server = 'smtp.zone.eu'
-                smtp_port = 587
+                smtp_server = settings.EMAIL_HOST
+                smtp_port = settings.EMAIL_PORT
 
                 context = ssl.create_default_context()
                 context.check_hostname = False
                 context.verify_mode = ssl.CERT_NONE
 
                 msg = MIMEMultipart()
-                msg['From'] = 'info@akordion.ee'
+                msg['From'] = settings.EMAIL_HOST_USER
                 msg['To'] = user_profile.email
-                msg['Subject'] = 'Your Invoice'
-
+                
                 if language in ['Eesti', 'Estonian']:
+                    msg['Subject'] = 'Akordioni rendiarve'
                     body = (
                         "Arve on lisatud manuses pdf-na.\n"
                         "Küsimuste korral, kontakteeruge info@akordion.ee."
                     )
+                    
                 else:
+                    msg['Subject'] = 'Your invoice'
                     body = (
                         "Please find attached your invoice.\n"
                         "For any queries, contact info@akordion.ee."
                     )
+                
+                    
                 msg.attach(MIMEText(body, 'plain'))
 
                 part = MIMEApplication(pdf_file, _subtype='pdf')
@@ -97,7 +102,7 @@ class Command(BaseCommand):
 
                 with smtplib.SMTP(smtp_server, smtp_port) as server:
                     server.starttls(context=context)
-                    server.login('info@akordion.ee', 'ogrmactpyqsgvqks')
+                    server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
                     server.sendmail(msg['From'], msg['To'], msg.as_string())
 
                 # Update invoice status

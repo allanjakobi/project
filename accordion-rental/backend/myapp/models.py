@@ -131,11 +131,13 @@ class Agreements(models.Model):
     status = models.CharField(max_length=15, editable=False, choices=[
         ('Created', 'Created'),
         ('Active', 'Active'), #contract signed
+        ('Test', 'Test'),
         ('EndingSoon', 'Ending Soon'),
         ('Ended', 'Ended'),
         ('Finished', 'Finished')
     ], default='Created')
     invoice_interval = models.IntegerField(default=1)
+    extended = models.IntegerField(default=0)
     
     class Meta:
         db_table = 'agreements'

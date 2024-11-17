@@ -15,6 +15,16 @@ def start():
     "interval",
     minutes=3,
     )
+    scheduler.add_job(
+        lambda: call_command("set_status_ending_soon"),
+        "interval",
+        days=1,  # Run once a day
+    )
+    scheduler.add_job(
+    lambda: call_command("extend_agreement"),
+    "interval",
+    minutes=1,
+    )
     
     
     scheduler.start()

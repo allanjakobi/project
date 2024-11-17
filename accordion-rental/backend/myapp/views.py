@@ -130,15 +130,19 @@ class AvailableInstrumentsViewSet(viewsets.ViewSet):
         # Prepare the serialized data with a calculated `date`
         instrument_data = []
         for instrument in available_instruments:
-            if instrument.status in ["Reserved", "Available"]:
+            if instrument.status in ["Available"]:
                 date = today
+            elif instrument.status in ["Reserved"]:
+                date = today+relativedelta(days=1)
             elif instrument.status in ["AgreementInProgress", "Rented"]:
                 # Retrieve the related agreement and calculate the end date
-                agreement = Agreements.objects.filter(instrumentId=instrument.instrumentId).first()
+                agreement = Agreements.objects.filter(instrumentId=instrument.instrumentId).last()
                 if agreement:
+                    
                     # Calculate the end date based on `startDate` and `months` interval
-                    end_date = agreement.startDate + timedelta(days=30 * agreement.months)
-                    date = min(end_date, today) if end_date > today else today
+                    end_date = agreement.startDate + relativedelta(months=agreement.months)
+                    print("agreement: ", end_date)
+                    date = max(end_date, today) if end_date > today else today
                 else:
                     date = today  # Default to today if no agreement found
             else:
