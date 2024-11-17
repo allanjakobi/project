@@ -53,6 +53,7 @@ from django.utils import timezone
 from django.db.models import Case, When, F, Value, DateField
 from django.db.models.functions import Now
 from .tasks import reset_instrument_status
+from rest_framework.permissions import IsAdminUser
 
 
 
@@ -227,8 +228,12 @@ def login_user(request):
                 not user_profile.phone or
                 not user_profile.language
             )
-            
-            redirect_url = "/profile" if missing_data else "/"
+            if user.is_staff:
+                print("STAFF", user)
+                redirect_url = "/admin"
+            else:
+                
+                redirect_url = "/profile" if missing_data else "/"
 
             # Create the response object
             response = JsonResponse({"redirect": redirect_url})
@@ -817,3 +822,62 @@ class ReserveInstrumentView(APIView):
             return Response({"error": "Instrument not found."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+@api_view(['POST'])
+@permission_classes([IsAdminUser])  # Ensure only staff can access
+def upload_payments(request):
+    if 'file' not in request.FILES:
+        return JsonResponse({'error': 'No file uploaded'}, status=400)
+    
+    file = request.FILES['file']
+    # Parse and process XML here to update payments.
+    # Match referenceNr with Agreements and add Payment records.
+    return JsonResponse({'status': 'Success', 'message': 'Payments uploaded'})
+
+@api_view(['GET'])
+#@permission_classes([IsAdminUser])  # Ensure only staff can access
+def list_agreements(request):
+    agreements = Agreements.objects.select_related('instrumentId__modelId', 'userId') \
+        .order_by('-startDate')  # Sorting by date descending
+    
+    data = []
+    for agreement in agreements:
+        payments_due = sum(
+            invoice.quantity * invoice.price 
+            for invoice in agreement.invoices_set.exclude(status='Paid')
+        )
+        data.append({
+            'agreementId': agreement.agreementId,
+            'startDate': agreement.startDate,
+            'endDate': agreement.endDate,
+            'status': agreement.status,
+            'instrument': {
+                'brand': agreement.instrumentId.modelId.brand,
+                'model': agreement.instrumentId.modelId.model,
+                'color': agreement.instrumentId.color,
+            },
+            'user': {
+                'firstName': agreement.userId.firstName,
+                'lastName': agreement.userId.lastName,
+                'phone': agreement.userId.phone,
+            },
+            'paymentsDue': payments_due,
+        })
+
+    return JsonResponse({'agreements': data})
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])  # Ensure only staff can access
+def send_email(request, agreement_id):
+    agreement = get_object_or_404(Agreements, pk=agreement_id)
+    message = request.data.get('message')
+    user_profile = agreement.userId
+
+    # Send email logic here
+    return JsonResponse({'status': 'Success', 'message': 'Email sent'})
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def admin_dashboard(request):
+    if not request.user.is_staff:
+        return Response({'detail': 'Not authorized'}, status=403)

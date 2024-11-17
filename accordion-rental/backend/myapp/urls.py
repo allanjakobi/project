@@ -2,12 +2,12 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
 from .views import AvailableInstrumentsViewSet, RendipillidListCreate, logout_user, register_user, login_user, profile_view, test_auth_view, contracts_view, ReserveInstrumentView
+from .views import upload_payments, list_agreements, send_email
+
 from django.contrib import admin
 from .views import admin_view, get_csrf_token, csrf
 from django.conf import settings
 from django.conf.urls.static import static
-
-
 
 # Create a router and register your viewsets with it
 router = DefaultRouter()
@@ -45,6 +45,13 @@ urlpatterns = [
     path('invoices/<int:pk>/edit/', views.InvoiceUpdate.as_view(), name='invoice-edit'),
     path('csrf/', get_csrf_token),
     path('api/csrf/', csrf),
+    path('api/admin/upload-payments/', upload_payments, name='upload_payments'),
+
+    # Endpoint to fetch agreements
+    path('api/admin/agreements/', list_agreements, name='list_agreements'),
+
+    # Endpoint to send email for a specific agreement
+    path('api/admin/send-email/<int:agreement_id>/', send_email, name='send_email'),
 
 
     # Include the router URLs

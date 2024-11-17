@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Box, Button, Input, Table, Tbody, Td, Th, Thead, Tr, Textarea, Heading } from "@chakra-ui/react";
+import {
+  Box, Button, Input, Table, Tbody, Td, Th, Thead, Tr, Textarea
+} from "@chakra-ui/react";
 import axios from "axios";
 
-const AdminDashboard = () => {
+const AdminPage = () => {
   const [agreements, setAgreements] = useState([]);
-  const [emailMessages, setEmailMessages] = useState({});
   const [file, setFile] = useState(null);
 
   useEffect(() => {
@@ -13,7 +14,7 @@ const AdminDashboard = () => {
 
   const fetchAgreements = async () => {
     try {
-      const response = await axios.get("/api/admin/agreements/");
+      const response = await axios.get("/admin/agreements/");
       setAgreements(response.data.agreements);
     } catch (error) {
       console.error("Error fetching agreements", error);
@@ -30,35 +31,20 @@ const AdminDashboard = () => {
     formData.append("file", file);
 
     try {
-      await axios.post("/api/admin/upload-payments/", formData);
+      await axios.post("/admin/upload-payments/", formData);
       alert("Payments uploaded successfully.");
     } catch (error) {
       console.error("Error uploading file", error);
     }
   };
 
-  const handleEmailChange = (agreementId, value) => {
-    setEmailMessages((prev) => ({
-      ...prev,
-      [agreementId]: value, // Update message for the specific agreementId
-    }));
-  };
-
-  // Function to send email
-  const handleSendEmail = (agreementId) => {
-    const emailMessage = emailMessages[agreementId];
-    console.log(`Sending email for agreement ${agreementId}:`, emailMessage);
-
-    fetch(`/api/send-email/${agreementId}/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ message: emailMessage }),
-    })
-      .then((response) => response.json())
-      .then((data) => console.log("Email sent:", data))
-      .catch((error) => console.error("Error sending email:", error));
+  const handleSendEmail = async (agreementId, message) => {
+    try {
+      await axios.post(`/admin/send-email/${agreementId}/`, { message });
+      alert("Email sent successfully.");
+    } catch (error) {
+      console.error("Error sending email", error);
+    }
   };
 
   return (
@@ -83,6 +69,7 @@ const AdminDashboard = () => {
         </Thead>
         <Tbody>
           {agreements.map((agreement) => (
+            
             <Tr key={agreement.agreementId}>
               <Td>{agreement.agreementId}</Td>
               <Td>{agreement.startDate}</Td>
@@ -92,21 +79,13 @@ const AdminDashboard = () => {
                 {agreement.instrument.brand} {agreement.instrument.model} ({agreement.instrument.color})
               </Td>
               <Td>
-            <Button>Signed</Button>
-            <Button>Returned</Button>
-            <Textarea
-              placeholder="Short email message"
-              value={emailMessages[agreement.agreementId] || ""} // Get value for the specific agreementId
-              onChange={(e) => handleEmailChange(agreement.agreementId, e.target.value)} // Update the state
-            />
-            <Button
-              mt={2} // Add some spacing
-              colorScheme="blue"
-              onClick={() => handleSendEmail(agreement.agreementId)} // Trigger send
-            >
-              Send
-            </Button>
-          </Td>
+                <Button>Signed</Button>
+                <Button>Returned</Button>
+                <Textarea
+                  placeholder="Short email message"
+                  onBlur={(e) => handleSendEmail(agreement.agreementId, e.target.value)}
+                />
+              </Td>
             </Tr>
           ))}
         </Tbody>
@@ -115,4 +94,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+export default AdminPage;
