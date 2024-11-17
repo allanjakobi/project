@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Image, Text, Button, VStack, useBreakpointValue } from "@chakra-ui/react";
+import {Badge, Box, Image, Text, Button, VStack, useBreakpointValue } from "@chakra-ui/react";
 import { useNavigate } from 'react-router-dom';
 
 const InstrumentDetails = ({ instrument, onBack, isLoggedIn }) => {
@@ -49,6 +49,7 @@ const InstrumentDetails = ({ instrument, onBack, isLoggedIn }) => {
 
       <Image 
         src={imageUrl} 
+        
         alt={`${instrument.modelId.brand} ${instrument.modelId.model}`} 
         borderRadius="lg"
         mb={5}
@@ -56,21 +57,24 @@ const InstrumentDetails = ({ instrument, onBack, isLoggedIn }) => {
 
       <VStack align="start" spacing={4}>
         <Text fontSize="2xl" fontWeight="bold">{instrument.modelId.brand} {instrument.modelId.model}</Text>
-        <Text fontSize="lg">Color: {instrument.color}</Text>
         <Text fontSize="lg">Serial: {instrument.serial}</Text>
-        <Text fontSize="lg">Status: {instrument.status}</Text>
-        <Text fontSize="lg">Price Level: {instrument.price_level}</Text>
+        <Badge colorScheme={instrument.status === 'Available' ? 'green' : 'red'} mb={2}>
+          {instrument.status}
+        </Badge>
+        <Text fontSize="lg">Price Level: {instrument.price_level} (Price in visible in next step after choosing period)</Text>
+        <Text fontSize="lg"></Text>
 
         <Text fontSize="2xl" fontWeight="bold">Model Details:</Text>
-        <Text>Keys: {instrument.modelId.keys}</Text>
-        <Text>Weight: {instrument.modelId.weight} kg</Text>
-        <Text>Dimensions: {instrument.modelId.height} cm x {instrument.modelId.width} cm</Text>
+        <Text>Keys: {instrument.modelId.keys}; Basses: {instrument.modelId.sb}</Text>
+        <Text>Key width: {instrument.whitekeywidth} cm</Text>
+
+        <Text>Dimensions: {instrument.modelId.height} cm x {instrument.modelId.width} cm; Weight: {instrument.modelId.weight} kg</Text>
         <Text>Reeds (Right/Left): {instrument.modelId.reedsR} / {instrument.modelId.reedsL}</Text>
-        <Text>New Price: ${instrument.modelId.newPrice}</Text>
-        <Text>Used Price: ${instrument.modelId.usedPrice}</Text>
+        <Text>New Price: ${instrument.modelId.newPrice}; Used Price: ${instrument.modelId.usedPrice}</Text>
+        <Text></Text>
 
         <Text fontSize="2xl" fontWeight="bold">Additional Info:</Text>
-        <Text>{instrument.info_est}</Text>
+        {/* <Text>{instrument.info_est}</Text> */}
         <Text>{instrument.info_eng}</Text>
 
         {instrument.status === 'Available' && (

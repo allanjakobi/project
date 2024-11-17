@@ -76,7 +76,6 @@ const AccordionList = ({ isLoggedIn }) => {
                     {instrument.modelId.brand} {instrument.modelId.model}
                   </Heading>
                   <Text fontSize="md" color="gray.600">Color: {instrument.color}</Text>
-                  <Text fontSize="md" color="gray.600">Serial: {instrument.serial}</Text>
 
                   <Badge colorScheme={instrument.status === 'Available' ? 'green' : 'red'} mb={2}>
                     {instrument.status}
@@ -89,17 +88,14 @@ const AccordionList = ({ isLoggedIn }) => {
                       </Text>
                   )}
                   
-
-                  <Heading as="h4" size="md" mt={4} mb={2} color="teal.500">
-                    Model Details
-                  </Heading>
                   <Text fontSize="sm" color="gray.600">Keys: {instrument.modelId.keys}</Text>
-                  <Text fontSize="sm" color="gray.600">Weight: {instrument.modelId.weight} kg</Text>
-                  <Text fontSize="sm" color="gray.600">
-                    Dimensions: {instrument.modelId.height}cm x {instrument.modelId.width}cm
-                  </Text>
+                  <Text fontSize="sm" color="gray.600">Basses: {instrument.modelId.sb}</Text>
+                  
                   <Text fontSize="sm" color="gray.600">
                     Reeds (Right/Left): {instrument.modelId.reedsR}/{instrument.modelId.reedsL}
+                  </Text>
+                  <Text fontSize="sm" color="gray.600">
+                    Dimensions: {instrument.modelId.height}cm x {instrument.modelId.width}cm
                   </Text>
                 </Box>
               </Box>
