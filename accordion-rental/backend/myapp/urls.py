@@ -54,8 +54,11 @@ urlpatterns = [
     path('api/admin/send-email/<int:agreement_id>/', views.send_email, name='send-email'),
     path('api/admin/update-info/<int:agreement_id>/', update_agreement_info, name='update_agreement_info'),
     path('api/admin/signed/<int:agreement_id>/', views.signed, name='signed'),
+    path('api/admin/finished/<int:agreement_id>/', views.set_finished, name='set_finished'),
 
 
     # Include the router URLs
     path('api/', include(router.urls)),  # Use this for the API endpoint
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+

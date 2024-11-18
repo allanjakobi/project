@@ -1042,3 +1042,18 @@ def signed(request, agreement_id):
         return JsonResponse({"message": "Contract status updated to Active", "status": "success"}, status=200)
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
+
+@csrf_exempt
+def set_finished(request, agreement_id):
+    if request.method == "POST":
+        # Fetch the agreement by ID
+        agreement = get_object_or_404(Agreements, pk=agreement_id)
+
+        # Update the status to 'Finished'
+        agreement.status = "Finished"
+        agreement.save()
+        agreement.instrumentId.status = "Available"
+
+        return JsonResponse({"message": "Contract status updated to Finished", "status": "success"}, status=200)
+
+    return JsonResponse({"error": "Invalid request method"}, status=405)

@@ -102,11 +102,21 @@ const AdminDashboard = () => {
     try {
       const response = await axios.post(`/api/admin/signed/${agreementId}/`);
       alert("Contract marked as Active successfully!");
-      // Optionally, refresh agreements to reflect the new status
       fetchAgreements();
     } catch (error) {
       console.error("Error updating contract status:", error.response?.data || error);
       alert("Failed to mark the contract as Active. Please try again.");
+    }
+  };
+
+  const handleSetFinished = async (agreementId) => {
+    try {
+      const response = await axios.post(`/api/admin/finished/${agreementId}/`);
+      alert("Contract marked as Finished successfully!");
+      fetchAgreements();
+    } catch (error) {
+      console.error("Error updating contract status:", error.response?.data || error);
+      alert("Failed to mark the contract as Finished. Please try again.");
     }
   };
 
@@ -174,8 +184,12 @@ const AdminDashboard = () => {
                   </Button>
                   )}
                   {["Active", "Test", "EndingSoon", "Ended"].includes(agreement.status) && (
-                    <Button mr={1} mt={1}>
-                      Set instrument Returned
+                    <Button
+                      mr={5}
+                      colorScheme="green"
+                      onClick={() => handleSetFinished(agreement.agreementId)}
+                    >
+                      Set Instrument Returned
                     </Button>
                   )}
                   <Textarea
