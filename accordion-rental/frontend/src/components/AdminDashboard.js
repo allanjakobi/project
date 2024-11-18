@@ -71,7 +71,19 @@ const AdminDashboard = () => {
   };
 
   const handleFileChange = (e) => setFile(e.target.files[0]);
-  const handleFileUpload = async () => { /* Upload logic */ };
+  const handleFileUpload = async () => {
+    if (!file) return;
+    const formData = new FormData();
+    console.log("DATA!: ", formData)
+    formData.append("file", file);
+
+    try {
+      await axios.post("/api/admin/upload-payments/", formData);
+      alert("Payments uploaded successfully.");
+    } catch (error) {
+      console.error("Error uploading file", error);
+    }
+  };
 
   const handleEmailChange = (agreementId, value) => {
     setEmailMessages((prev) => ({
