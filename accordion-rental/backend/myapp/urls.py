@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
 from .views import AvailableInstrumentsViewSet, RendipillidListCreate, logout_user, register_user, login_user, profile_view, test_auth_view, contracts_view, ReserveInstrumentView
-from .views import upload_payments, list_agreements, send_email
+from .views import upload_payments, list_agreements, send_email, update_agreement_info
 
 from django.contrib import admin
 from .views import admin_view, get_csrf_token, csrf
@@ -51,7 +51,8 @@ urlpatterns = [
     path('api/admin/agreements/', list_agreements, name='list_agreements'),
 
     # Endpoint to send email for a specific agreement
-    path('api/admin/send-email/<int:agreement_id>/', send_email, name='send_email'),
+    path('api/admin/send-email/<int:agreement_id>/', views.send_email, name='send-email'),
+    path('api/admin/update-info/<int:agreement_id>/', update_agreement_info, name='update_agreement_info'),
 
 
     # Include the router URLs

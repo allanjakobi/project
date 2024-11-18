@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Model, Rendipillid
+from .models import Model, Rendipillid, Agreements
 
 class ModelSerializer(serializers.ModelSerializer):
     class Meta:
@@ -72,3 +72,8 @@ class RendipillidSerializer(serializers.ModelSerializer):
         if whitekeys == 0:  # Prevent division by zero
             return None
         return round(keyboard / whitekeys, 2)
+
+class AgreementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Agreements
+        fields = ['agreementId', 'referenceNr', 'startDate', 'months', 'status', 'userId', 'info', 'instrumentId', 'invoice_interval', 'extended' ]  # Add all fields you need

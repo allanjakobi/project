@@ -7,7 +7,7 @@ from rest_framework import generics
 from rest_framework.views import APIView
 
 from .models import Agreements, Rates, Rendipillid, Users, Model, Invoices, Payment
-from .serializers import ModelSerializer, RendipillidSerializer
+from .serializers import ModelSerializer, RendipillidSerializer, AgreementSerializer
 from django.shortcuts import render
 from .forms import RendipillidForm
 from dateutil.relativedelta import relativedelta
@@ -15,7 +15,6 @@ from dateutil.relativedelta import relativedelta
 
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
-from django.core.mail import EmailMessage
 from rest_framework import viewsets
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
@@ -419,8 +418,9 @@ def create_agreement(request):
         html_content = render_to_string(template_name, context)
         pdf_file = HTML(string=html_content).write_pdf()
         
-        smtp_server = 'smtp.zone.eu'  # Replace with your SMTP server
-        smtp_port = 587  # Typically 587 for STARTTLS
+        smtp_server = settings.EMAIL_HOST  # Replace with your SMTP server
+        smtp_port = settings.EMAIL_PORT
+        # Typically 587 for STARTTLS
 
         # Create an SSL context without certificate verification (not recommended for production)
         context = ssl.create_default_context()
@@ -429,7 +429,7 @@ def create_agreement(request):
 
         # Create the email message
         msg = MIMEMultipart()
-        msg['From'] = 'info@akordion.ee' 
+        msg['From'] = settings.EMAIL_HOST_USER
         msg['To'] = user_instance.email
         msg['Subject'] = 'Your Rental Agreement'
 
@@ -444,7 +444,7 @@ def create_agreement(request):
         try:
             with smtplib.SMTP(smtp_server, smtp_port) as server:
                 server.starttls(context=context)  # Use the context with no verification
-                server.login('info@akordion.ee', 'ogrmactpyqsgvqks')  # Use your SMTP credentials
+                server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)  # Use your SMTP credentials
                 server.sendmail(msg['From'], msg['To'], msg.as_string())
             print("Email sent successfully.")
         except Exception as e:
@@ -935,6 +935,8 @@ def list_agreements(request):
             'startDate': agreement.startDate,
             'endDate': agreement.endDate,
             'status': agreement.status,
+            'info': agreement.info,
+            
             'instrument': {
                 'brand': agreement.instrumentId.modelId.brand,
                 'model': agreement.instrumentId.modelId.model,
@@ -944,6 +946,8 @@ def list_agreements(request):
                 'firstName': agreement.userId.firstName,
                 'lastName': agreement.userId.lastName,
                 'phone': agreement.userId.phone,
+                'email': agreement.userId.email,
+                
             },
             'paymentsDue': payments_due,
         })
@@ -951,17 +955,76 @@ def list_agreements(request):
     return JsonResponse({'agreements': data})
 
 @api_view(['POST'])
-@permission_classes([IsAdminUser])  # Ensure only staff can access
+#@permission_classes([IsAdminUser])  # Ensure only staff can access
 def send_email(request, agreement_id):
-    agreement = get_object_or_404(Agreements, pk=agreement_id)
-    message = request.data.get('message')
-    user_profile = agreement.userId
+    
+    try:
+        # Fetch agreement and user details
+        agreement = Agreements.objects.get(agreementId=agreement_id)
+        
+        user_instance = agreement.userId  # Assuming the agreement has a linked user
+        print("sending started: ", user_instance)
+        # Get the message content from the request body
+        email_message = request.data.get('email_message', '')
+        print("sending started: ", email_message)
+        
+        
+        # Set up the SMTP server and email details
+        smtp_server = settings.EMAIL_HOST
+        smtp_port = settings.EMAIL_PORT
+        context = ssl.create_default_context()
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+        
+        msg = MIMEMultipart()
+        msg['From'] = settings.EMAIL_HOST_USER
+        msg['To'] = user_instance.email       
+        msg['Subject'] = f'{agreement.instrumentId.modelId.brand} {agreement.instrumentId.modelId.model}'
 
-    # Send email logic here
-    return JsonResponse({'status': 'Success', 'message': 'Email sent'})
+        
+        if user_instance.language in ['Eesti', 'Estonian']:    
+            body = f'{email_message}\n\nParimate soovidega, \n Akordioni rent'
+        else:    
+            body = f'{email_message}\n\nBest regards,\n Accordion Rent.'
+        msg.attach(MIMEText(body, 'plain'))
+        
+        # Establish SMTP connection
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls(context=context)
+            server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+            server.sendmail(msg['From'], msg['To'], msg.as_string())
+        
+        return Response({'message': 'Email sent successfully'}, status=200)
+    
+    except Exception as e:
+        return Response({'error': str(e)}, status=400)
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def admin_dashboard(request):
     if not request.user.is_staff:
         return Response({'detail': 'Not authorized'}, status=403)
+    
+@api_view(['PUT'])
+def update_agreement_info(request, agreement_id):
+    try:
+        # Retrieve the agreement by ID
+        agreement = Agreements.objects.get(agreementId=agreement_id)
+
+        # Check if 'info' is present in the request data
+        info = request.data.get('info')
+        if info is None:
+            return Response({"error": "Info field is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Update the info field in the agreement
+        agreement.info = info
+        agreement.save()  # Save the updated agreement object
+
+        # Serialize the updated agreement object
+        serializer = AgreementSerializer(agreement)
+
+        # Return the updated agreement data in the response
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    except Agreements.DoesNotExist:
+        return Response({"error": "Agreement not found."}, status=status.HTTP_404_NOT_FOUND)
