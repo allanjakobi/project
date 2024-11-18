@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Box, Button, Input, Table, Tbody, Td, Th, Thead, Tr, Textarea } from "@chakra-ui/react";
 import axios from "axios";
+import Cookies from "js-cookie";
 
 const AdminDashboard = () => {
   const [agreements, setAgreements] = useState([]);
@@ -8,6 +9,9 @@ const AdminDashboard = () => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [emailMessages, setEmailMessages] = useState({});
   const [file, setFile] = useState(null);
+
+  const csrfToken = Cookies.get("csrftoken");
+  axios.defaults.headers.common["X-CSRFToken"] = csrfToken;
 
   useEffect(() => {
     fetchAgreements();
@@ -26,6 +30,8 @@ const AdminDashboard = () => {
       console.error("Error fetching agreements", error);
     }
   };
+
+
 
   const sortAgreements = () => {
     const sorted = [...agreements];
@@ -92,6 +98,18 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleSetSigned = async (agreementId) => {
+    try {
+      const response = await axios.post(`/api/admin/signed/${agreementId}/`);
+      alert("Contract marked as Active successfully!");
+      // Optionally, refresh agreements to reflect the new status
+      fetchAgreements();
+    } catch (error) {
+      console.error("Error updating contract status:", error.response?.data || error);
+      alert("Failed to mark the contract as Active. Please try again.");
+    }
+  };
+
   const handleInfoChange = (agreementId, newInfo) => {
     axios
       .put(`/api/admin/update-info/${agreementId}/`, { info: newInfo })
@@ -148,7 +166,12 @@ const AdminDashboard = () => {
                 </Td>
                 <Td>
                   {agreement.status === "Created" && (
-                    <Button mr={5}>Set contract Signed</Button>
+                    <Button
+                    mr={5}
+                    onClick={() => handleSetSigned(agreement.agreementId)}
+                  >
+                    Set contract Signed
+                  </Button>
                   )}
                   {["Active", "Test", "EndingSoon", "Ended"].includes(agreement.status) && (
                     <Button mr={1} mt={1}>

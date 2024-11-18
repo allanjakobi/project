@@ -53,6 +53,7 @@ urlpatterns = [
     # Endpoint to send email for a specific agreement
     path('api/admin/send-email/<int:agreement_id>/', views.send_email, name='send-email'),
     path('api/admin/update-info/<int:agreement_id>/', update_agreement_info, name='update_agreement_info'),
+    path('api/admin/signed/<int:agreement_id>/', views.signed, name='signed'),
 
 
     # Include the router URLs

@@ -1028,3 +1028,17 @@ def update_agreement_info(request, agreement_id):
 
     except Agreements.DoesNotExist:
         return Response({"error": "Agreement not found."}, status=status.HTTP_404_NOT_FOUND)
+    
+@csrf_exempt
+def signed(request, agreement_id):
+    if request.method == "POST":
+        # Fetch the agreement by ID
+        agreement = get_object_or_404(Agreements, pk=agreement_id)
+
+        # Update the status to 'Active'
+        agreement.status = "Active"
+        agreement.save()
+
+        return JsonResponse({"message": "Contract status updated to Active", "status": "success"}, status=200)
+
+    return JsonResponse({"error": "Invalid request method"}, status=405)
