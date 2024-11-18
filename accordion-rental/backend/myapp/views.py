@@ -829,6 +829,7 @@ class ReserveInstrumentView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 @api_view(['POST'])
+@csrf_exempt
 #@permission_classes([IsAdminUser])  # Ensure only staff can access
 def upload_payments(request):
     if 'file' not in request.FILES:
@@ -909,6 +910,7 @@ def upload_payments(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 @api_view(['GET'])
+@csrf_exempt
 #@permission_classes([IsAdminUser])  # Ensure only staff can access
 def list_agreements(request):
     agreements = Agreements.objects.select_related('instrumentId__modelId', 'userId') \
@@ -955,6 +957,7 @@ def list_agreements(request):
     return JsonResponse({'agreements': data})
 
 @api_view(['POST'])
+@csrf_exempt
 #@permission_classes([IsAdminUser])  # Ensure only staff can access
 def send_email(request, agreement_id):
     
@@ -1006,6 +1009,7 @@ def admin_dashboard(request):
         return Response({'detail': 'Not authorized'}, status=403)
     
 @api_view(['PUT'])
+@csrf_exempt
 def update_agreement_info(request, agreement_id):
     try:
         # Retrieve the agreement by ID
