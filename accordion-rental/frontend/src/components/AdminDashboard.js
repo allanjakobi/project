@@ -27,6 +27,7 @@ const AdminDashboard = () => {
   const handleFileUpload = async () => {
     if (!file) return;
     const formData = new FormData();
+    console.log("DATA!: ", formData)
     formData.append("file", file);
 
     try {
@@ -87,7 +88,12 @@ const AdminDashboard = () => {
               <Td>{agreement.agreementId}</Td>
               <Td>{agreement.startDate}</Td>
               <Td>{agreement.endDate}</Td>
-              <Td>{agreement.status}</Td>
+              <Td>
+                {agreement.status}{' @ '}
+                <span style={{ color: agreement.paymentsDue < 0 ? 'red' : 'inherit' }}>
+                  {agreement.paymentsDue}€
+                </span>
+              </Td>
               <Td>
                 {agreement.instrument.brand} {agreement.instrument.model} ({agreement.instrument.color})
               </Td>
@@ -111,6 +117,7 @@ const AdminDashboard = () => {
           ))}
         </Tbody>
       </Table>
+      
     </Box>
   );
 };

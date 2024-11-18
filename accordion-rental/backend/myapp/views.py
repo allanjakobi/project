@@ -6,7 +6,7 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework import generics
 from rest_framework.views import APIView
 
-from .models import Agreements, Rates, Rendipillid, Users, Model, Invoices
+from .models import Agreements, Rates, Rendipillid, Users, Model, Invoices, Payment
 from .serializers import ModelSerializer, RendipillidSerializer
 from django.shortcuts import render
 from .forms import RendipillidForm
@@ -20,7 +20,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.db.models import Q
+from django.db.models import Q, Sum, F
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
@@ -54,6 +54,11 @@ from django.db.models import Case, When, F, Value, DateField
 from django.db.models.functions import Now
 from .tasks import reset_instrument_status
 from rest_framework.permissions import IsAdminUser
+
+from django.db import IntegrityError
+from xml.etree import ElementTree as ET
+from django.utils.timezone import make_aware
+
 
 
 
@@ -824,15 +829,84 @@ class ReserveInstrumentView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 @api_view(['POST'])
-@permission_classes([IsAdminUser])  # Ensure only staff can access
+#@permission_classes([IsAdminUser])  # Ensure only staff can access
 def upload_payments(request):
     if 'file' not in request.FILES:
         return JsonResponse({'error': 'No file uploaded'}, status=400)
     
     file = request.FILES['file']
-    # Parse and process XML here to update payments.
-    # Match referenceNr with Agreements and add Payment records.
-    return JsonResponse({'status': 'Success', 'message': 'Payments uploaded'})
+    
+    try:
+        # Parse the XML file
+        tree = ET.parse(file)
+        root = tree.getroot()
+        
+        # Define the namespace
+        ns = {'ns': 'urn:iso:std:iso:20022:tech:xsd:camt.053.001.02'}
+        
+        # Find all Ntry elements
+        for ntry in root.findall(".//ns:Ntry", ns):
+            
+            reference_number_element = ntry.find(".//ns:CdtrRefInf/ns:Ref", ns)
+            if reference_number_element is None:
+                continue  # Skip this entry if reference number element is missing
+
+            reference_number = reference_number_element.text.strip()
+            if not reference_number.startswith("20") or not reference_number.isdigit():
+                continue  # Skip this entry if reference number is invalid
+            
+            if reference_number.isdigit():  # Check if it is a valid integer-like string
+                reference_number_int = int(reference_number)
+            else:
+                reference_number_int = None  # Handle non-integer strings
+
+            # Extract other fields only if reference number is valid
+            amount_element = ntry.find("ns:Amt", ns)
+            amount = float(amount_element.text) if amount_element is not None else 0.0
+
+            currency = amount_element.get("Ccy") if amount_element is not None else ""
+
+            transaction_id_element = ntry.find("ns:AcctSvcrRef", ns)
+            transaction_id = transaction_id_element.text.strip() if transaction_id_element is not None else ""
+
+            payment_date_element = ntry.find("ns:BookgDt/ns:Dt", ns)
+            payment_date = (
+                make_aware(datetime.strptime(payment_date_element.text, "%Y-%m-%d"))
+                if payment_date_element is not None
+                else None
+            )
+
+            payer_name_element = ntry.find(".//ns:Dbtr/ns:Nm", ns)
+            payer_name = payer_name_element.text.strip() if payer_name_element is not None else ""
+
+            payer_account_element = ntry.find(".//ns:DbtrAcct/ns:Id/ns:IBAN", ns)
+            payer_account = payer_account_element.text.strip() if payer_account_element is not None else ""
+
+            status_element = ntry.find("ns:Sts", ns)
+            status = status_element.text.strip() if status_element is not None else ""
+
+            # Check for existing payment
+            if not Payment.objects.filter(transaction_id=transaction_id).exists():
+                # Check if the reference number matches any agreement
+                if Agreements.objects.filter(referenceNr=(reference_number_int)).exists():
+                    # Create a new payment
+                    Payment.objects.create(
+                        transaction_id=transaction_id,
+                        reference_number=reference_number,
+                        amount=amount,
+                        currency=currency,
+                        payer_name=payer_name,
+                        payer_account=payer_account,
+                        payment_date=payment_date,
+                        status=status
+                    )
+
+        return JsonResponse({'status': 'Success', 'message': 'Payments uploaded successfully'})
+    
+    except ET.ParseError:
+        return JsonResponse({'error': 'Invalid XML file'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 @api_view(['GET'])
 #@permission_classes([IsAdminUser])  # Ensure only staff can access
@@ -842,10 +916,20 @@ def list_agreements(request):
     
     data = []
     for agreement in agreements:
-        payments_due = sum(
+        """ payments_due = -sum(
             invoice.quantity * invoice.price 
             for invoice in agreement.invoices_set.exclude(status='Paid')
-        )
+        ) """
+        
+        total_payments = Payment.objects.filter(reference_number=agreement.referenceNr) \
+            .aggregate(total=Sum('amount'))['total'] or 0
+
+        # Sum of invoice amounts (quantity * price) where the invoice is not 'Paid'
+        unpaid_invoices = agreement.invoices_set.exclude(status='Paid') \
+            .aggregate(total=Sum(F('quantity') * F('price')))['total'] or 0
+
+        # Calculate payments due
+        payments_due = total_payments - unpaid_invoices
         data.append({
             'agreementId': agreement.agreementId,
             'startDate': agreement.startDate,
