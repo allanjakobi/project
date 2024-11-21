@@ -1,70 +1,224 @@
-# Getting Started with Create React App
+# ACCORDION RENTAL APP
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+#### Video Demo: <URL HERE>
 
-## Available Scripts
+## 👀 Description
 
-In the project directory, you can run:
+The **Accordion Rental App** is a web-based platform that streamlines the rental process for musical instruments, focusing on accordions.
 
-### `npm start`
+The Django admin panel provides tools for managing:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- User data
+- Instruments
+- Contracts
+- Invoices
+- Agreements
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+For Users:
 
-### `npm test`
+- Guests
+  Guests can browse available and rented instruments. Rented instruments are displayed with their expected return dates.
+- Registered Users
+  After registering, users can reserve instruments temporarily while deciding. Since rental rates are dynamic (based on the rental period), users are given a short decision window.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Once a rental agreement is submitted:
 
-### `npm run build`
+- A PDF agreement, generated in the user’s profile-selected language, is automatically emailed.
+- Invoices are created based on the user’s language preference and chosen payment interval. New invoices are checked and emailed daily.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Users can view their contracts and invoices on their dashboard and download them as PDFs.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Before the rental period ends, an automated reminder is sent, prompting the user to coordinate with the lessor about either returning the instrument or extending the contract. If the admin does not mark the instrument as "returned," the agreement is extended automatically.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+For Staff:
+Users with "staff" status are redirected to an admin dashboard where they can:
 
-### `npm run eject`
+- Track payments and upload bank statement XML files
+- Send notifications,
+- Update contract statuses (e.g., "digitally signed," "instrument returned").
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Statuses can be updated manually using buttons on the interface.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Additional features for staff include:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- Sending short emails via a message form.
+- Editing an "additional info" field.
+- Sorting contracts by various fields for better tracking of payments due or advance payments.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 👇 Key Features
 
-## Learn More
+- User Profiles:
+  Users can register, log in, and manage their profiles.
+- Instrument Management:
+  Users can browse and reserve instruments, with real-time availability and pricing updates..
+- Agreements and Invoices:
+  Rental agreements and invoices are generated and sent automatically based on user preferences.
+- Automate remainders:
+  Notifications are sent to users before the end of their rental period, ensuring proactive communication.
+- Admin Dashboard:
+  Staff can manage contracts, update statuses, track payments, and send messages.
+- Email Notifications:
+  Custom email messages can be sent directly from the admin dashboard.
+- JWT Authentication, csrf tokens:
+  Ensures secure login and session management with access tokens.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Project Structure
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Frontend (accordion-rental/frontend)
 
-### Code Splitting
+This folder contains the React application for the user interface.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+#### Key Files:
 
-### Analyzing the Bundle Size
+- src/App.js
+  Entry point for the React app; contains routes for various pages.
+- src/components/AdminDashboard.js
+  Admin panel with tools for managing contracts, sending emails, and updating information.
+- src/components/ProfileForm.js
+  User profile management form for updating personal information.
+- src/components/InstrumentDetails.js
+  Displays detailed instrument information and allows reservations.
+- .env
+  Configuration for API endpoint (e.g., VITE_API=192.168.1.187:8000).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### Backend (accordion-rental/backend)
 
-### Making a Progressive Web App
+This folder contains the Django project that powers the backend API.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+#### Key Files:
 
-### Advanced Configuration
+- manage.py
+  Entry point for the Django application.
+- settings.py
+  Configuration for the Django project, including installed apps, database, and authentication settings.
+- urls.py
+  Defines all API endpoints and routes.
+- models.py
+  Contains the data models for users, instruments, and agreements.
+- views.py
+  Handles requests and responses for the app's functionality, including contract updates and email notifications.
+  serializers.py
+  Serializes data between Django models and API responses.
+- permissions.py
+  Custom permissions for securing API endpoints.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+#### Database (db.sqlite3)
 
-### Deployment
+SQLite database file storing user profiles, agreements, instruments, and other app data.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## 👩‍💻 Running the Project
 
-### `npm run build` fails to minify
+### Prerequisites
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Python 3.12+
+  Install Python from python.org.
+- Node.js and npm
+  Install Node.js from nodejs.org.
+- SQLite
+  SQLite is included with Python.
+
+## Setup Instructions
+
+#### Backend Setup
+
+1. Navigate to the backend folder:
+
+```bash
+cd accordion-rental/backend
+```
+
+2. Create a virtual environment and activate it:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate # On Windows: venv\Scripts\activate
+```
+
+3. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+4. Run migrations to set up the database:
+
+```bash
+python manage.py migrate
+```
+
+5. Start the Django server:
+
+```bash
+python manage.py runserver
+```
+
+#### Frontend Setup
+
+1. Navigate to the frontend folder:
+
+```bash
+cd accordion-rental/frontend
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Start the React development server:
+
+```bash
+npm start
+```
+
+### Access the Application
+
+- Frontend (React):
+  Open your browser and go to http://localhost:3000.
+
+- Backend (Django):
+  API is accessible at http://localhost:8000/api/.
+
+## Usage
+
+1. Admin Tasks:
+
+- Log in as an admin.
+- View agreements and send email notifications.
+- Update contract statuses (e.g., "Signed" or "Finished").
+
+2. User Actions:
+
+- Browse instruments and reserve them.
+- Manage personal information via the profile form.
+
+## Troubleshooting
+
+1. Permission Errors with SQLite:
+
+- Ensure the database file and directory have proper permissions:
+
+```bash
+chmod 664 backend/db.sqlite3
+chmod 775 backend/
+```
+
+2. Frontend Fails to Connect to Backend:
+
+- Verify the API URL in .env matches the backend server's IP and port.
+
+3. Missing Dependencies:
+
+- Run pip install and npm install to ensure all required packages are installed.
+
+## References
+
+Used forums: Stack Overflow, Reddit.
+Sone parts of this code are created with assistance of OpenAI. (2024). ChatGPT (Version 4) language model
+
+## License
+
+Retaining all rights and control over distribution and usage.
+Users are kindly asked getting contact before reuse, modification, or redistribution.
+Feel free to contact if you want additional information.
