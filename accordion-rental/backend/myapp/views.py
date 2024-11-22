@@ -462,7 +462,7 @@ def create_agreement(request):
             print(f"Error sending email: {e}") 
         
         #instrument.status="AgreementInProgress"
-        instrument.status="Available"
+        instrument.status="AgreementInProgress"
         instrument.save()
         
         return JsonResponse({
