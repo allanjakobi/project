@@ -1,64 +1,47 @@
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from rest_framework import generics
-from rest_framework.views import APIView
-
+from .forms import RendipillidForm
 from .models import Agreements, Rates, Rendipillid, Users, Model, Invoices, Payment
 from .serializers import ModelSerializer, RendipillidSerializer, AgreementSerializer
-from django.shortcuts import render
-from .forms import RendipillidForm
+from .tasks import reset_instrument_status
+from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-
-
-from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, CreateView, UpdateView
-from rest_framework import viewsets
-from rest_framework.response import Response
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from django.db.models import Q, Sum, F
+from django.conf import settings
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, logout
-from django.conf import settings
-from rest_framework import status
+# from django.core.mail import EmailMessage
+# from django.db import IntegrityError
+from django.db.models import Q, Sum, F
+from django.db.models.functions import Now
 from django.http import JsonResponse, HttpResponse
 from django.middleware.csrf import get_token
-from django.views.decorators.csrf import ensure_csrf_cookie
-from datetime import datetime, timedelta
-import json
-from rest_framework_simplejwt.tokens import AccessToken
-from django.contrib.auth.models import User
-import jwt
-from django.shortcuts import get_object_or_404
-import logging
-import tempfile
-from dateutil.relativedelta import relativedelta
-from weasyprint import HTML
+from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
-import smtplib
-import ssl
-import certifi
-from django.core.mail import EmailMessage
-from io import BytesIO
-
+from django.urls import reverse_lazy
+from django.utils import timezone
+# from django.utils.decorators import method_decorator
+from django.utils.timezone import make_aware
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from django.views.generic import ListView, DetailView, CreateView, UpdateView
+from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.mime.application import MIMEApplication
-from django.utils import timezone
-from django.db.models import Case, When, F, Value, DateField
-from django.db.models.functions import Now
-from .tasks import reset_instrument_status
-from rest_framework.permissions import IsAdminUser
-
-from django.db import IntegrityError
+# from io import BytesIO
+from rest_framework import generics, status, viewsets
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken, UntypedToken
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from weasyprint import HTML
 from xml.etree import ElementTree as ET
-from django.utils.timezone import make_aware
-
-
+# import certifi
+import json
+import jwt
+import logging
+import smtplib
+import ssl
+# import tempfile
 
 
 logger = logging.getLogger(__name__)
@@ -201,7 +184,6 @@ def csrf(request):
 def test_auth_view(request):
     return Response({"message": "Authenticated successfully"})
 
-##@csrf_exempt  # Remove this after testing
 @api_view(['POST'])
 def login_user(request):
     #data = request.data
@@ -246,10 +228,10 @@ def login_user(request):
             response.set_cookie(
                 'access_token',
                 access_token,
-                httponly=False, # Set to False for local development
-                secure=False,  # Set to False for local development, Ensure this is True in production
-                samesite='Lax',  # Set from Lax to None for local development
-                max_age=3600  # 1 hour
+                httponly = False, # Set to False for local development
+                secure = False,  # Set to False for local development, Ensure this is True in production
+                samesite = 'Lax',  # Set from Lax to None for local development
+                max_age = 3600  # 1 hour
             )
            
             response.set_cookie(
@@ -307,7 +289,7 @@ def profile_view(request):
             "apartment": user_profile.apartment,
             "phone": user_profile.phone,
             "language": user_profile.language,
-            "email2": auth_user_email,
+            "email2": auth_user_email, #if eighter missing, using another
             "email": user_profile.email,
         }
         return Response(profile_data)
@@ -365,55 +347,84 @@ def check_login(request):
 @csrf_exempt  # Make sure to include CSRF token handling in frontend#        
 #@permission_classes([IsAuthenticated])  # Only allow authenticated users
 def create_agreement(request):
+    
    
     access_token = request.COOKIES.get('access_token')
     user = get_user_id_from_token(access_token)
     data = json.loads(request.body)
-    
+        
     instrument_id = int(data.get('instrumentId'))
+    #instrument = get_object_or_404(Rendipillid, pk=instrument_id)
+    
     rental_period = int(data.get('months'))
     additional_info = data.get('info')
     rate = int(data.get('rate'))
     invoice_interval = int(data.get('invoiceInterval'))
     
     startDate = datetime.now()
-    print("startDate", startDate)
     date1 = startDate + timedelta(days=7)
     date2 = date1 + relativedelta(months=1)
     date3 = date2 + relativedelta(months=1)
+   
+    
     
     if not instrument_id:
         return JsonResponse({"error": "Instrument ID is required"}, status=400)
     
     try:
+        
         instrument = Rendipillid.objects.get(instrumentId=instrument_id)
+        
+
+        model = Model.objects.get(modelId=instrument.modelId.modelId)
+        
         if rate:
             rate = calculate_rate(rate, rental_period)  # Helper function for rate calculation
         
         user_instance = get_object_or_404(Users, user_id=user)
+        
         agreement = Agreements.objects.create(
-            userId=user_instance,
-            instrumentId=instrument,
+            userId=user_instance,  # Pass the instance, not the ID
+            instrumentId=instrument,  # Pass the instance, not the ID
             startDate=startDate,
-            months=rental_period,
-            rate=rate,
-            info=additional_info,
+            months=rental_period or 0,
+            rate=rate or 0,
+            info=additional_info or "",
             status='Created',
-            invoice_interval=invoice_interval,
+            invoice_interval=invoice_interval or 1,
         )
+        
+        
+        end_date = agreement.startDate + relativedelta(months=agreement.months)
         
         language = user_instance.language
         template_name = 'agreement_template_est.html' if language in ['Eesti', 'Estonian'] else 'agreement_template_eng.html'
+
+        print("test")
         context = {
             'agreement': agreement,
             'instrument': instrument,
+            'model': model,
+            'user_profile': user_instance,
             'startDate': agreement.startDate,
+            'endDate': end_date,
+            'rate': agreement.rate,
+            'rental_period': f"{agreement.startDate.date()} to {end_date.date()}",
+            'instrument_details': {
+                'serial': instrument.serial,
+                'instrumentId': instrument.instrumentId,
+                'status': instrument.status,
+                'color': instrument.color,
+            },
             'date1': date1,
             'date2': date2,
             'date3': date3,
-            'rate': rate,
-            'rental_period': rental_period,
         }
+        
+        
+        print("UUUUUUU", user_instance.language)
+
+        
         
         html_content = render_to_string(template_name, context)
         pdf_file = HTML(string=html_content).write_pdf()
@@ -450,7 +461,8 @@ def create_agreement(request):
         except Exception as e:
             print(f"Error sending email: {e}") 
         
-        instrument.status="AgreementInProgress"
+        #instrument.status="AgreementInProgress"
+        instrument.status="Available"
         instrument.save()
         
         return JsonResponse({
@@ -725,10 +737,6 @@ def download_invoice(request, invoice_id):
             "model": agreement.instrumentId.modelId.model,
             "imageLink": imageLink,
         },
-         
-        
-         
-        
          "logoLink": '/media/logo.jpg'
     }
     

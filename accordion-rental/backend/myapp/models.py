@@ -192,7 +192,7 @@ class Agreements(models.Model):
         if self.instrumentId:
             instrument = self.instrumentId
             #NB do not forget to switch to Reserved back later !!!
-            instrument.status = "Available"
+            instrument.status = "Reserved"
             instrument.save()
 
 

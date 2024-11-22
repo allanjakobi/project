@@ -61,7 +61,7 @@ const InstrumentDetails = ({ instrument, onBack, isLoggedIn }) => {
         <Badge colorScheme={instrument.status === 'Available' ? 'green' : 'red'} mb={2}>
           {instrument.status}
         </Badge>
-        <Text fontSize="lg">Price Level: {instrument.price_level} (Price in visible in next step after choosing period)</Text>
+        <Text fontSize="lg">Price Level: {instrument.price_level} (Actual price is shown in the next step after choosing period)</Text>
         <Text fontSize="lg"></Text>
 
         <Text fontSize="2xl" fontWeight="bold">Model Details:</Text>
