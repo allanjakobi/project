@@ -11,7 +11,7 @@ const LoginForm = ({ setIsLoggedIn }) => {
   const [rememberMe, setRememberMe] = useState(false);
   //const apiUrl = import.meta.env.VITE_API;
   //const apiUrl = "192.168.1.187:8000";
-  const apiUrl = "localhost:8000";
+  
 
   // Fetch CSRF token on component mount
   useEffect(() => {

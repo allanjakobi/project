@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Input, VStack, HStack, Select, Text, SimpleGrid } from "@chakra-ui/react";
+import { Box, Button, Input, VStack, Select, Text, SimpleGrid } from "@chakra-ui/react";
 
 const ProfileForm = () => {
   

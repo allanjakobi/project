@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
-  Box, Grid, Image, Heading, Text, Badge, Spinner, useBreakpointValue,
+  Box, Grid, Image, Heading, Text, Badge, Spinner
 } from "@chakra-ui/react";
 import InstrumentDetails from './InstrumentDetails'; // Import the detailed component
 

@@ -62,6 +62,7 @@ const RegisterForm = () => {
       if (response.ok) {
         const data = await response.json();
         setSuccessMessage('User added successfully!');
+        console.log(data)
         
         // Redirect to login after successful registration
         setTimeout(() => {

@@ -17,9 +17,9 @@ const AdminDashboard = () => {
     fetchAgreements();
   }, []);
 
-  useEffect(() => {
+ /*  useEffect(() => {
     sortAgreements();
-  }, [sortConfig, agreements]);
+  }, [sortConfig, agreements]); */
 
   const fetchAgreements = async () => {
     try {
@@ -33,14 +33,13 @@ const AdminDashboard = () => {
 
 
 
-  const sortAgreements = () => {
+  const sortAgreements = React.useCallback(() => {
     const sorted = [...agreements];
     if (sortConfig.key) {
       sorted.sort((a, b) => {
         let aValue, bValue;
   
         if (sortConfig.key === "hasActionButton") {
-          // Determine if action buttons are present based on status
           aValue = ["Created", "Active", "Test", "EndingSoon", "Ended"].includes(a.status) ? 1 : 0;
           bValue = ["Created", "Active", "Test", "EndingSoon", "Ended"].includes(b.status) ? 1 : 0;
         } else {
@@ -61,7 +60,11 @@ const AdminDashboard = () => {
       });
     }
     setSortedAgreements(sorted);
-  };
+  }, [sortConfig, agreements]);
+  
+  useEffect(() => {
+    sortAgreements();
+  }, [sortAgreements]);
 
   const handleSort = (key) => {
     setSortConfig((prev) => ({
@@ -102,6 +105,7 @@ const AdminDashboard = () => {
       const response = await axios.post(`/api/admin/send-email/${agreementId}/`, {
         email_message: emailMessage,
       });
+      console.log(response)
       alert("Email sent successfully!");
       handleEmailChange(agreementId, "");
     } catch (error) {
@@ -113,6 +117,7 @@ const AdminDashboard = () => {
   const handleSetSigned = async (agreementId) => {
     try {
       const response = await axios.post(`/api/admin/signed/${agreementId}/`);
+      console.log(response)
       alert("Contract marked as Active successfully!");
       fetchAgreements();
     } catch (error) {
@@ -124,6 +129,7 @@ const AdminDashboard = () => {
   const handleSetFinished = async (agreementId) => {
     try {
       const response = await axios.post(`/api/admin/finished/${agreementId}/`);
+      console.log(response)
       alert("Contract marked as Finished successfully!");
       fetchAgreements();
     } catch (error) {

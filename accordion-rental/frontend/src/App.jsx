@@ -12,7 +12,6 @@ import RentalForm from './components/RentalForm';
 import Contracts from './components/contracts';
 import Invoices from './components/invoices';
 import NotFoundPage from './components/NotFoundPage'; // Optional 404 page
-import AdminPage from './components/AdminPage';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);

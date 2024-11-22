@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { Box, Flex, HStack, Link, Button } from '@chakra-ui/react';
 
