@@ -1,15 +1,14 @@
 from pathlib import Path
 from datetime import timedelta
+from decouple import config
 import smtplib, ssl
-#import certifi
-
-
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'your-secure-secret-key'
+#SECRET_KEY = 'your-secure-secret-key'
+SECRET_KEY =config('SECRET_KEY')
 
 DEBUG = True
 
@@ -52,7 +51,6 @@ CSRF_TRUSTED_ORIGINS = [
 CSRF_COOKIE_SAMESITE = 'None'
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = False
-# i changed to true to get 
 
 AUTHENTICATION_BACKENDS = [
    'django.contrib.auth.backends.ModelBackend',
@@ -121,9 +119,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'myproject.wsgi.application'
 
-
-
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # or 'postgresql', 'mysql', etc.
@@ -164,17 +159,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.zone.eu'  # Täpsusta vastavalt oma teenusepakkujale
-EMAIL_PORT = 587  # STARTTLS jaoks (või 465 SSL/TLS jaoks)
-EMAIL_USE_TLS = True  # STARTTLS kasutamiseks
-EMAIL_USE_SSL = False  # Kui kasutad SSL/TLS, pane väärtuseks True ja eemalda TLS
-EMAIL_HOST_USER = 'info@akordion.ee'
-EMAIL_HOST_PASSWORD = 'ogrmactpyqsgvqks'
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT')
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = config('EMAIL_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-#EMAIL_SSL_CERTFILE = certifi.where()
-
-
-""" context = ssl.create_default_context()
-context.check_hostname = False
-context.verify_mode = ssl.CERT_NONE """

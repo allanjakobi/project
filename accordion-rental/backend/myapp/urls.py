@@ -39,10 +39,7 @@ urlpatterns = [
     path('api/login/', login_user, name='login_user'),
     path('api/check_login/', views.check_login, name='check_login'),
     path('admin-view/', admin_view, name='admin_view'),
-    path('invoices/', views.InvoiceList.as_view(), name='invoice-list'),
-    path('invoices/add/', views.InvoiceCreate.as_view(), name='invoice-add'),
-    path('invoices/<int:pk>/', views.InvoiceDetail.as_view(), name='invoice-detail'),
-    path('invoices/<int:pk>/edit/', views.InvoiceUpdate.as_view(), name='invoice-edit'),
+    
     path('csrf/', get_csrf_token),
     path('api/csrf/', csrf),
     path('api/admin/upload-payments/', upload_payments, name='upload_payments'),

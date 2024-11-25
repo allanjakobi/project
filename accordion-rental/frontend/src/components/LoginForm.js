@@ -10,7 +10,6 @@ const LoginForm = ({ setIsLoggedIn }) => {
   const navigate = useNavigate();
   const [rememberMe, setRememberMe] = useState(false);
   //const apiUrl = import.meta.env.VITE_API;
-  //const apiUrl = "192.168.1.187:8000";
   
 
   // Fetch CSRF token on component mount
@@ -61,14 +60,6 @@ const LoginForm = ({ setIsLoggedIn }) => {
       // Set the state to logged in, and redirect user based on response
       const data = await response.json();
       console.log("Login successful:", data);
-      /* console.log("Access Token (from cookies):", document.cookie
-        .split('; ')
-        .find(row => row.startsWith('access_token'))
-        ?.split('=')[1]);
-      console.log("Refresh Token (from cookies):", document.cookie
-        .split('; ')
-        .find(row => row.startsWith('refresh_token'))
-        ?.split('=')[1]); */
 
       setIsLoggedIn(true);
       navigate(data.redirect);
