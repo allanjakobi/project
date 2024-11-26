@@ -144,7 +144,32 @@ pip install -r requirements.txt
 python manage.py migrate
 ```
 
-5. Start the Django server:
+5. make an .env file in backend root, copy and supply with your variables:
+
+```bash
+GENERATE_SOURCEMAP=false
+
+DEBUG=False
+SECRET_KEY='your-secret-key'
+DATABASE_NAME='your-database-name'
+DATABASE_USER='your-database-user'
+DATABASE_PASSWORD='your-database-password'
+DATABASE_HOST='localhost'
+DATABASE_PORT=5432
+
+EMAIL_HOST='your_smtp_host' # e.g smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER='your user e-mail'
+EMAIL_PASSWORD='xxxxxxx' # fill in your mail "dedicated app" password, not user password
+
+ACCESS_HTTP = False
+ACCESS_SECURE = False
+ACCESS_SAMESITE = 'Lax'
+ACESSS_MAX_AGE = 3600
+
+```
+
+6. Start the Django server:
 
 ```bash
 python manage.py runserver
