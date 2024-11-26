@@ -4,12 +4,11 @@ from .serializers import ModelSerializer, RendipillidSerializer, AgreementSerial
 from .tasks import reset_instrument_status
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+from decouple import config
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
-# from django.core.mail import EmailMessage
-# from django.db import IntegrityError
 from django.db.models import Q, Sum, F
 from django.db.models.functions import Now
 from django.http import JsonResponse, HttpResponse
@@ -18,14 +17,12 @@ from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils import timezone
-# from django.utils.decorators import method_decorator
 from django.utils.timezone import make_aware
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-# from io import BytesIO
 from rest_framework import generics, status, viewsets
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken, UntypedToken
@@ -35,13 +32,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from weasyprint import HTML
 from xml.etree import ElementTree as ET
-# import certifi
 import json
 import jwt
 import logging
 import smtplib
 import ssl
-# import tempfile
 
 
 logger = logging.getLogger(__name__)
@@ -374,11 +369,7 @@ def create_agreement(request):
             'date2': date2,
             'date3': date3,
         }
-        
-        
-        print("UUUUUUU", user_instance.language)
-
-        
+    
         
         html_content = render_to_string(template_name, context)
         pdf_file = HTML(string=html_content).write_pdf()
@@ -396,9 +387,13 @@ def create_agreement(request):
         msg = MIMEMultipart()
         msg['From'] = settings.EMAIL_HOST_USER
         msg['To'] = user_instance.email
-        msg['Subject'] = 'Your Rental Agreement'
-
-        body = 'Please find attached your rental agreement.\n Please send the agreement digitally signed to the e-mail info@akordion.ee \n'
+        if language in ["Estonian", "Eesti"]:
+            msg['Subject'] = 'Akordioni rendileping'
+            body = f'Manusest leiate pdf kujul rendilepingu.\n Palume rendileping digiallirjastatuna saata e-posti aadressile: {config('EMAIL_USER')} \n'
+        else:
+            msg['Subject'] = 'Your Rental Agreement'
+            body = f'Please find attached your rental agreement.\n Please send the agreement digitally signed to the e-mail {config('EMAIL_USER')} \n'
+            
         msg.attach(MIMEText(body, 'plain'))
         #attachment       
         part = MIMEApplication(pdf_file, _subtype='pdf')

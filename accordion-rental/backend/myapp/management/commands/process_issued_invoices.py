@@ -9,6 +9,7 @@ from email.mime.application import MIMEApplication
 import ssl
 from django.utils.timezone import now
 from django.conf import settings
+from decouple import config
 
 class Command(BaseCommand):
     help = "Process all invoices with status 'Issued'"
@@ -80,14 +81,14 @@ class Command(BaseCommand):
                     msg['Subject'] = 'Akordioni rendiarve'
                     body = (
                         "Arve on lisatud manuses pdf-na.\n"
-                        "Küsimuste korral, kontakteeruge info@akordion.ee."
+                        f"Küsimuste korral kontakteeruge {config('EMAIL_USER')}."
                     )
                     
                 else:
                     msg['Subject'] = 'Your invoice'
                     body = (
                         "Please find attached your invoice.\n"
-                        "For any queries, contact info@akordion.ee."
+                        f"For any queries, contact {config('EMAIL_USER')}."
                     )
                 
                     

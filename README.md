@@ -1,6 +1,6 @@
-# ACCORDION RENTAL APP
+# ACCORDION RENTAL
 
-#### Video Demo: <URL HERE>
+#### Video Demo: <https://youtu.be/f1B0YboCA0g>
 
 ## 👀 Description
 
@@ -99,8 +99,6 @@ This folder contains the Django project that powers the backend API.
   Handles requests and responses for the app's functionality, including contract updates and email notifications.
   serializers.py
   Serializes data between Django models and API responses.
-- permissions.py
-  Custom permissions for securing API endpoints.
 
 #### Database (db.sqlite3)
 
@@ -150,6 +148,12 @@ python manage.py migrate
 
 ```bash
 python manage.py runserver
+```
+
+6. For running some backgorund tasks - an additional process needs to be running:
+
+```bash
+python manage.py process_tasks
 ```
 
 #### Frontend Setup
@@ -206,7 +210,7 @@ chmod 775 backend/
 
 2. Frontend Fails to Connect to Backend:
 
-- Verify the API URL in .env matches the backend server's IP and port.
+- Verify the API URL matches the backend server's IP and port.
 
 3. Missing Dependencies:
 
@@ -215,7 +219,7 @@ chmod 775 backend/
 ## References
 
 Used forums: Stack Overflow, Reddit.
-Sone parts of this code are created with assistance of OpenAI. (2024). ChatGPT (Version 4) language model
+Parts of this code are created with assistance of OpenAI. (2024). ChatGPT (Version 4) language model
 
 ## License
 

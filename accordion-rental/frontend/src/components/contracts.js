@@ -4,6 +4,7 @@ import { Box, Text, Table, Thead, Tbody, Tr, Th, Td, Image, Button } from '@chak
 const Contracts = () => {
   const [contracts, setContracts] = useState([]);
 
+
   useEffect(() => {
     const fetchContracts = async () => {
       const response = await fetch('http://localhost:8000/api/contracts/', {

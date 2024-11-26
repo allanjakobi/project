@@ -3,6 +3,7 @@ import { Box, Button, Input, Table, Tbody, Td, Th, Thead, Tr, Textarea } from "@
 import axios from "axios";
 import Cookies from "js-cookie";
 
+
 const AdminDashboard = () => {
   const [agreements, setAgreements] = useState([]);
   const [sortedAgreements, setSortedAgreements] = useState([]);
@@ -95,6 +96,7 @@ const AdminDashboard = () => {
     }));
   };
 
+  
   const handleSendEmail = async (agreementId) => {
     const emailMessage = emailMessages[agreementId];
     if (!emailMessage) {
